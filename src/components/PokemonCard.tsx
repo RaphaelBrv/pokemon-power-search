@@ -1,123 +1,236 @@
-import React from 'react';
-import { Card } from "@/components/ui/card";
+import React from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
-interface Pokemon {
-  id: number;
-  name: string;
-  sprites: {
-    front_default: string;
-  };
-  types: {
-    type: {
-      name: string;
-    };
-  }[];
-  stats: {
-    base_stat: number;
-    stat: {
-      name: string;
-    };
-  }[];
-}
 
-interface PokemonCardProps {
-  pokemon: Pokemon;
-}
-
+// Mapping des types de Pokémon aux couleurs
 const typeColors: Record<string, string> = {
   normal: "bg-gray-400",
-  fire: "bg-red-500",
-  water: "bg-blue-500",
-  electric: "bg-yellow-400 from-yellow-100",
-  grass: "bg-green-500",
-  ice: "bg-blue-200",
   fighting: "bg-red-700",
+  flying: "bg-indigo-300",
   poison: "bg-purple-500",
   ground: "bg-yellow-600",
-  flying: "bg-blue-300",
-  psychic: "bg-pink-500",
-  bug: "bg-green-400",
   rock: "bg-yellow-700",
+  bug: "bg-green-500",
   ghost: "bg-purple-700",
-  dragon: "bg-blue-600",
-  dark: "bg-gray-700",
   steel: "bg-gray-500",
+  fire: "bg-red-500",
+  water: "bg-blue-500",
+  grass: "bg-green-600",
+  electric: "bg-yellow-400",
+  psychic: "bg-pink-500",
+  ice: "bg-blue-300",
+  dragon: "bg-indigo-600",
+  dark: "bg-gray-800 text-white",
   fairy: "bg-pink-300",
+  unknown: "bg-gray-300",
+  shadow: "bg-purple-900 text-white",
 };
 
-const PokemonCard = ({ pokemon }: PokemonCardProps) => {
-  const translateStatName = (name: string): string => {
-    const translations: Record<string, string> = {
-      "hp": "PV",
-      "attack": "Attaque",
-      "defense": "Défense",
-      "special-attack": "Attaque Spé.",
-      "special-defense": "Défense Spé.",
-      "speed": "Vitesse"
+// Fonction pour formater un nombre avec des zéros au début
+const formatNumber = (num: number): string => {
+  return num.toString().padStart(3, "0");
+};
+
+// Fonction pour convertir les hectogrammes en kg
+const convertToKg = (weightInHg: number): string => {
+  return (weightInHg / 10).toFixed(1);
+};
+
+// Fonction pour convertir les décimètres en mètres
+const convertToM = (heightInDm: number): string => {
+  return (heightInDm / 10).toFixed(1);
+};
+
+// Fonction pour capitaliser la première lettre d'une chaîne
+const capitalize = (str: string): string => {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+interface PokemonCardProps {
+  pokemon: {
+    id: number;
+    name: string;
+    sprites: {
+      front_default: string;
+      other: {
+        "official-artwork": {
+          front_default: string;
+        };
+      };
     };
-    return translations[name] || name;
+    types: Array<{
+      type: {
+        name: string;
+      };
+    }>;
+    stats: Array<{
+      base_stat: number;
+      stat: {
+        name: string;
+      };
+    }>;
+    abilities: Array<{
+      ability: {
+        name: string;
+      };
+    }>;
+    height: number;
+    weight: number;
+  };
+}
+
+const PokemonCard: React.FC<PokemonCardProps> = ({ pokemon }) => {
+  // Statut du Pokémon
+  const stats = {
+    hp: pokemon.stats.find((stat) => stat.stat.name === "hp")?.base_stat || 0,
+    attack:
+      pokemon.stats.find((stat) => stat.stat.name === "attack")?.base_stat || 0,
+    defense:
+      pokemon.stats.find((stat) => stat.stat.name === "defense")?.base_stat ||
+      0,
+    specialAttack:
+      pokemon.stats.find((stat) => stat.stat.name === "special-attack")
+        ?.base_stat || 0,
+    specialDefense:
+      pokemon.stats.find((stat) => stat.stat.name === "special-defense")
+        ?.base_stat || 0,
+    speed:
+      pokemon.stats.find((stat) => stat.stat.name === "speed")?.base_stat || 0,
   };
 
-  const mainType = pokemon.types[0]?.type.name || 'normal';
-  const isElectric = mainType === 'electric';
-
   return (
-    <Card className={`w-full max-w-md mx-auto transform hover:scale-105 transition-transform duration-200 rounded-xl overflow-hidden
-      ${isElectric 
-        ? 'bg-gradient-to-b from-yellow-100 via-yellow-50 to-yellow-100' 
-        : 'bg-gradient-to-br from-gray-50 to-gray-100'} 
-      border-8 border-gray-300 shadow-xl`}>
-      <div className="relative p-4">
-        <div className="flex justify-between items-center mb-2">
-          <h2 className="text-2xl font-bold capitalize">{pokemon.name}</h2>
-          <span className="font-bold">PV {pokemon.stats[0].base_stat}</span>
+    <Card className="w-full overflow-hidden transition-all duration-300 transform hover:shadow-lg">
+      <CardHeader className="relative pb-0 pt-6">
+        <div className="absolute top-2 right-2">
+          <Badge variant="outline" className="text-sm font-semibold">
+            #{formatNumber(pokemon.id)}
+          </Badge>
         </div>
-
-        <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-2 mb-4">
-          <img
-            src={pokemon.sprites.front_default}
-            alt={pokemon.name}
-            className="w-48 h-48 mx-auto"
-          />
-        </div>
-
-        <div className="flex justify-center gap-2 mb-4">
-          {pokemon.types.map(({ type }) => (
-            <span
-              key={type.name}
-              className={`${typeColors[type.name]} px-3 py-1 rounded-full text-white text-sm font-semibold capitalize shadow`}
+        <CardTitle className="text-2xl font-bold capitalize">
+          {pokemon.name}
+        </CardTitle>
+        <div className="flex space-x-2 mt-2">
+          {pokemon.types.map((type, index) => (
+            <Badge
+              key={index}
+              className={`${
+                typeColors[type.type.name] || "bg-gray-500"
+              } hover:${typeColors[type.type.name] || "bg-gray-600"}`}
             >
-              {type.name}
-            </span>
+              {capitalize(type.type.name)}
+            </Badge>
           ))}
         </div>
-
-        <div className="bg-gray-100 rounded-lg p-4">
-          <div className="grid grid-cols-2 gap-4">
-            {pokemon.stats.map(({ base_stat, stat }) => (
-              <div key={stat.name} className="text-left">
-                <div className="text-sm font-semibold text-gray-700">
-                  {translateStatName(stat.name)}
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-2 flex-1 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-yellow-400 rounded-full"
-                      style={{ width: `${(base_stat / 255) * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-bold">{base_stat}</span>
-                </div>
+      </CardHeader>
+      <CardContent className="p-6">
+        <div className="flex flex-col md:flex-row">
+          <div className="text-center md:w-1/3">
+            <div className="relative w-48 h-48 mx-auto">
+              <img
+                src={
+                  pokemon.sprites.other["official-artwork"].front_default ||
+                  pokemon.sprites.front_default
+                }
+                alt={pokemon.name}
+                className="object-contain"
+                width={192}
+                height={192}
+              />
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+              <div className="bg-gray-100 p-2 rounded-lg">
+                <p className="text-gray-500">Taille</p>
+                <p className="font-semibold">{convertToM(pokemon.height)} m</p>
               </div>
+              <div className="bg-gray-100 p-2 rounded-lg">
+                <p className="text-gray-500">Poids</p>
+                <p className="font-semibold">
+                  {convertToKg(pokemon.weight)} kg
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="md:w-2/3 md:pl-6 mt-6 md:mt-0">
+            <h3 className="text-lg font-semibold mb-4">Statistiques</h3>
+            <div className="space-y-3">
+              <StatBar label="PV" value={stats.hp} color="bg-red-400" />
+              <StatBar
+                label="Attaque"
+                value={stats.attack}
+                color="bg-orange-400"
+              />
+              <StatBar
+                label="Défense"
+                value={stats.defense}
+                color="bg-yellow-400"
+              />
+              <StatBar
+                label="Att. Spé"
+                value={stats.specialAttack}
+                color="bg-blue-400"
+              />
+              <StatBar
+                label="Déf. Spé"
+                value={stats.specialDefense}
+                color="bg-green-400"
+              />
+              <StatBar
+                label="Vitesse"
+                value={stats.speed}
+                color="bg-pink-400"
+              />
+            </div>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className="bg-gray-50 p-4">
+        <div className="w-full">
+          <h3 className="text-lg font-semibold mb-2">Capacités</h3>
+          <div className="flex flex-wrap gap-2">
+            {pokemon.abilities.map((ability, index) => (
+              <Badge key={index} variant="secondary" className="capitalize">
+                {ability.ability.name.replace("-", " ")}
+              </Badge>
             ))}
           </div>
         </div>
-
-        <div className="text-center text-xs text-gray-500 mt-4">
-          #{pokemon.id.toString().padStart(3, '0')}
-        </div>
-      </div>
+      </CardFooter>
     </Card>
+  );
+};
+
+interface StatBarProps {
+  label: string;
+  value: number;
+  color: string;
+}
+
+const StatBar: React.FC<StatBarProps> = ({ label, value, color }) => {
+  // Calculer le pourcentage (en supposant que 255 est la valeur max pour les stats)
+  const percentage = Math.min(100, (value / 255) * 100);
+
+  return (
+    <div>
+      <div className="flex justify-between mb-1">
+        <span className="font-medium text-sm">{label}</span>
+        <span className="text-sm font-semibold">{value}</span>
+      </div>
+      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+        <div
+          className={`h-full ${color} rounded-full`}
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+    </div>
   );
 };
 
