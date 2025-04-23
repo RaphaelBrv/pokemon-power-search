@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card } from "@/components/ui/card";
 
@@ -29,7 +28,7 @@ const typeColors: Record<string, string> = {
   normal: "bg-gray-400",
   fire: "bg-red-500",
   water: "bg-blue-500",
-  electric: "bg-yellow-400",
+  electric: "bg-yellow-400 from-yellow-100",
   grass: "bg-green-500",
   ice: "bg-blue-200",
   fighting: "bg-red-700",
@@ -59,47 +58,63 @@ const PokemonCard = ({ pokemon }: PokemonCardProps) => {
     return translations[name] || name;
   };
 
+  const mainType = pokemon.types[0]?.type.name || 'normal';
+  const isElectric = mainType === 'electric';
+
   return (
-    <Card className="w-full max-w-md mx-auto p-6 transform hover:scale-105 transition-transform duration-200 bg-gradient-to-br from-white to-gray-100 border-2 border-gray-200">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold capitalize mb-4 text-gray-800">
-          {pokemon.name} #{pokemon.id.toString().padStart(3, '0')}
-        </h2>
-        
-        <div className="relative w-48 h-48 mx-auto mb-4">
+    <Card className={`w-full max-w-md mx-auto transform hover:scale-105 transition-transform duration-200 rounded-xl overflow-hidden
+      ${isElectric 
+        ? 'bg-gradient-to-b from-yellow-100 via-yellow-50 to-yellow-100' 
+        : 'bg-gradient-to-br from-gray-50 to-gray-100'} 
+      border-8 border-gray-300 shadow-xl`}>
+      <div className="relative p-4">
+        <div className="flex justify-between items-center mb-2">
+          <h2 className="text-2xl font-bold capitalize">{pokemon.name}</h2>
+          <span className="font-bold">PV {pokemon.stats[0].base_stat}</span>
+        </div>
+
+        <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-2 mb-4">
           <img
             src={pokemon.sprites.front_default}
             alt={pokemon.name}
-            className="w-full h-full object-contain"
+            className="w-48 h-48 mx-auto"
           />
         </div>
 
-        <div className="flex justify-center gap-2 mb-6">
+        <div className="flex justify-center gap-2 mb-4">
           {pokemon.types.map(({ type }) => (
             <span
               key={type.name}
-              className={`${typeColors[type.name]} px-3 py-1 rounded-full text-white text-sm capitalize`}
+              className={`${typeColors[type.name]} px-3 py-1 rounded-full text-white text-sm font-semibold capitalize shadow`}
             >
               {type.name}
             </span>
           ))}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          {pokemon.stats.map(({ base_stat, stat }) => (
-            <div key={stat.name} className="text-left">
-              <div className="text-sm text-gray-600">{translateStatName(stat.name)}</div>
-              <div className="flex items-center gap-2">
-                <div className="h-2 flex-1 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-red-600 rounded-full"
-                    style={{ width: `${(base_stat / 255) * 100}%` }}
-                  />
+        <div className="bg-gray-100 rounded-lg p-4">
+          <div className="grid grid-cols-2 gap-4">
+            {pokemon.stats.map(({ base_stat, stat }) => (
+              <div key={stat.name} className="text-left">
+                <div className="text-sm font-semibold text-gray-700">
+                  {translateStatName(stat.name)}
                 </div>
-                <span className="text-sm font-medium">{base_stat}</span>
+                <div className="flex items-center gap-2">
+                  <div className="h-2 flex-1 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-yellow-400 rounded-full"
+                      style={{ width: `${(base_stat / 255) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-sm font-bold">{base_stat}</span>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+        </div>
+
+        <div className="text-center text-xs text-gray-500 mt-4">
+          #{pokemon.id.toString().padStart(3, '0')}
         </div>
       </div>
     </Card>
