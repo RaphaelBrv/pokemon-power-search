@@ -1,12 +1,14 @@
 
 import React from 'react';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import SearchBar from '@/components/SearchBar';
 import PokemonCard from '@/components/PokemonCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import LoadingMessage from '@/components/LoadingMessage';
 import Hero from '@/components/Hero';
 import Footer from '@/components/Footer';
+import Navbar from '@/components/Navbar';
+import FAQ from '@/components/FAQ';
 
 const Index = () => {
   const [pokemon, setPokemon] = React.useState<any>(null);
@@ -40,8 +42,10 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <Navbar />
+      
+      <main className="max-w-4xl mx-auto px-4">
         <Hero />
         
         <div className="text-center mb-8">
@@ -52,7 +56,7 @@ const Index = () => {
           <SearchBar onSearch={searchPokemon} isLoading={isLoading} />
         </div>
         
-        <div className="mt-8">
+        <div className="mt-8 mb-12">
           {isLoading && (
             <div className="space-y-4">
               <LoadingSpinner />
@@ -62,11 +66,12 @@ const Index = () => {
           {pokemon && !isLoading && <PokemonCard pokemon={pokemon} />}
         </div>
 
-        <Footer />
-      </div>
+        <FAQ />
+      </main>
+
+      <Footer />
     </div>
   );
 };
 
 export default Index;
-

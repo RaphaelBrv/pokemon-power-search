@@ -61,6 +61,13 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				pokemon: {
+					red: '#FF0000',
+					'boston-red': '#CC0000',
+					'cerulean-blue': '#3B4CCA',
+					'golden-yellow': '#FFDE00',
+					'gold-foil': '#B3A125',
 				}
 			},
 			borderRadius: {
