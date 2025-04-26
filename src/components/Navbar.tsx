@@ -9,11 +9,11 @@ import {
 } from "./ui/navigation-menu";
 import { cn } from "@/lib/utils";
 
-// 1. Définir l'interface des props pour inclure className
-interface NavbarProps extends React.HTMLAttributes<HTMLElement> {}
-
-// 2. Accepter className et l'appliquer à l'élément racine avec cn
-const Navbar: React.FC<NavbarProps> = ({ className, ...props }) => {
+// Utiliser directement React.HTMLAttributes<HTMLElement> pour les props
+const Navbar: React.FC<React.HTMLAttributes<HTMLElement>> = ({
+  className,
+  ...props
+}) => {
   return (
     <nav
       className={cn(
