@@ -24,7 +24,10 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+
+    /* Ignorer les bibliothèques implicites manquantes */
+    "types": []
   },
   "include": ["src"]
 }
