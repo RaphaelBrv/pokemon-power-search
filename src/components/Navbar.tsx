@@ -1,14 +1,30 @@
-
-import React from 'react';
-import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "./ui/navigation-menu";
+import React from "react";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "./ui/navigation-menu";
 import { cn } from "@/lib/utils";
 
-const Navbar = () => {
+// 1. Définir l'interface des props pour inclure className
+interface NavbarProps extends React.HTMLAttributes<HTMLElement> {}
+
+// 2. Accepter className et l'appliquer à l'élément racine avec cn
+const Navbar: React.FC<NavbarProps> = ({ className, ...props }) => {
   return (
-    <nav className="w-full bg-[#3B4CCA] text-white py-4 px-6 mb-8">
+    <nav
+      className={cn(
+        "w-full bg-[#3B4CCA] text-white py-4 px-6 mb-8", // Classes par défaut
+        className // Classes externes passées via la prop
+      )}
+      {...props}
+    >
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <div className="text-2xl font-bold text-[#FFDE00]">Pokédex</div>
-        
+
         <NavigationMenu>
           <NavigationMenuList>
             <NavigationMenuItem>
