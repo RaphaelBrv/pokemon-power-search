@@ -16,6 +16,7 @@ export interface PokemonCard {
             total: number;
             official: number;
         };
+        releaseDate?: string;
     };
     illustrator?: string;
     description?: string;
@@ -30,6 +31,13 @@ export interface PokemonCard {
         effect: string;
         damage: string;
     }>;
+    marketPrices?: {
+        low: number;
+        mid: number;
+        high: number;
+        market: number;
+        lastUpdated: string;
+    };
 }
 
 // Interface pour les données du set
@@ -38,9 +46,50 @@ export interface PokemonSet {
     name: string;
     logo: string;
     symbol: string;
+    releaseDate?: string;
     cardCount: {
         total: number;
         official: number;
     };
     cards: PokemonCard[];
+}
+
+// Interface pour les filtres
+export interface PokemonFilters {
+    types: string[];
+    rarities: string[];
+    sets: string[];
+    minHp: number;
+    maxHp: number;
+}
+
+// Interface pour les options de tri
+export type SortOption = 'name' | 'releaseDate' | 'rarity' | 'hp';
+export type SortDirection = 'asc' | 'desc';
+
+export interface SortSettings {
+    option: SortOption;
+    direction: SortDirection;
+}
+
+// Interface pour un deck personnalisé
+export interface PokemonDeck {
+    id: string;
+    name: string;
+    description: string;
+    createdAt: Date;
+    updatedAt: Date;
+    cards: Array<{
+        cardId: string;
+        quantity: number;
+    }>;
+    coverImage?: string;
+}
+
+// Interface pour l'historique des recherches
+export interface SearchHistoryItem {
+    id: string;
+    query: string;
+    timestamp: Date;
+    resultCount: number;
 } 

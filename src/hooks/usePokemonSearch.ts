@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { PokemonCard } from "@/types/pokemon";
+import { PokemonCard, PokemonFilters, SortSettings } from "@/types/pokemon";
 import { formatImageUrl, formatSymbolUrl } from "../lib/imageUtils";
+import { useSearchHistory } from "@/contexts/SearchHistoryContext";
+import marketPriceService from "@/lib/marketPriceService";
 
 const CARDS_PER_PAGE = 12;
 const DEFAULT_CARDS_COUNT = 12;
@@ -27,6 +29,31 @@ export const usePokemonSearch = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [visibleCards, setVisibleCards] = useState(CARDS_PER_PAGE);
     const { toast } = useToast();
+    const { addSearchToHistory } = useSearchHistory();
+
+    // État pour les filtres et le tri
+    const [filters, setFilters] = useState<PokemonFilters>({
+        types: [],
+        rarities: [],
+        sets: [],
+        minHp: 0,
+        maxHp: 300,
+    });
+    const [sortSettings, setSortSettings] = useState<SortSettings>({
+        option: 'name',
+        direction: 'asc',
+    });
+    const [filteredCards, setFilteredCards] = useState<PokemonCard[]>([]);
+    const [availableOptions, setAvailableOptions] = useState({
+        types: [] as string[],
+        rarities: [] as string[],
+        sets: [] as string[],
+        maxHp: 300
+    });
+
+    // État pour le chargement des prix
+    const [pricesLoading, setPricesLoading] = useState(false);
+    const [pricesLoaded, setPricesLoaded] = useState(false);
 
     // Charger des cartes populaires au chargement initial
     useEffect(() => {
@@ -34,6 +61,139 @@ export const usePokemonSearch = () => {
         loadDefaultCards();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // Appliquer les filtres et le tri lorsque les cartes, les filtres ou les options de tri changent
+    useEffect(() => {
+        applyFiltersAndSort();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pokemonCards, filters, sortSettings]);
+
+    // Extraire les options disponibles des cartes chargées
+    useEffect(() => {
+        if (pokemonCards.length > 0) {
+            extractAvailableOptions();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pokemonCards]);
+
+    const extractAvailableOptions = () => {
+        const types = new Set<string>();
+        const rarities = new Set<string>();
+        const sets = new Set<string>();
+        let maxHpValue = 0;
+
+        pokemonCards.forEach(card => {
+            // Types
+            if (card.types) {
+                card.types.forEach(type => types.add(type));
+            }
+
+            // Rareté
+            if (card.rarity) {
+                rarities.add(card.rarity);
+            }
+
+            // Sets
+            if (card.set?.name) {
+                sets.add(card.set.name);
+            }
+
+            // HP max
+            if (card.hp) {
+                const hpValue = parseInt(card.hp, 10);
+                if (!isNaN(hpValue) && hpValue > maxHpValue) {
+                    maxHpValue = hpValue;
+                }
+            }
+        });
+
+        setAvailableOptions({
+            types: Array.from(types).sort(),
+            rarities: Array.from(rarities).sort(),
+            sets: Array.from(sets).sort(),
+            maxHp: maxHpValue > 0 ? maxHpValue : 300
+        });
+
+        // Mettre à jour le maxHp des filtres si nécessaire
+        setFilters(prev => ({
+            ...prev,
+            maxHp: Math.max(prev.maxHp, maxHpValue)
+        }));
+    };
+
+    const applyFiltersAndSort = () => {
+        const result = pokemonCards.filter(card => {
+            // Filtrer par type
+            if (filters.types.length > 0) {
+                if (!card.types || !card.types.some(type => filters.types.includes(type))) {
+                    return false;
+                }
+            }
+
+            // Filtrer par rareté
+            if (filters.rarities.length > 0) {
+                if (!card.rarity || !filters.rarities.includes(card.rarity)) {
+                    return false;
+                }
+            }
+
+            // Filtrer par set
+            if (filters.sets.length > 0) {
+                if (!card.set?.name || !filters.sets.includes(card.set.name)) {
+                    return false;
+                }
+            }
+
+            // Filtrer par HP
+            if (card.hp) {
+                const hpValue = parseInt(card.hp, 10);
+                if (!isNaN(hpValue)) {
+                    if (hpValue < filters.minHp || hpValue > filters.maxHp) {
+                        return false;
+                    }
+                }
+            } else if (filters.minHp > 0) {
+                // Si la carte n'a pas de HP et que le minimum est supérieur à 0
+                return false;
+            }
+
+            return true;
+        });
+
+        // Trier les cartes
+        result.sort((a, b) => {
+            const direction = sortSettings.direction === 'asc' ? 1 : -1;
+
+            switch (sortSettings.option) {
+                case 'name':
+                    return (a.name || '').localeCompare(b.name || '') * direction;
+
+                case 'rarity': {
+                    if (!a.rarity && !b.rarity) return 0;
+                    if (!a.rarity) return direction;
+                    if (!b.rarity) return -direction;
+                    return a.rarity.localeCompare(b.rarity) * direction;
+                }
+
+                case 'hp': {
+                    const aHp = a.hp ? parseInt(a.hp, 10) : 0;
+                    const bHp = b.hp ? parseInt(b.hp, 10) : 0;
+                    return (aHp - bHp) * direction;
+                }
+
+                case 'releaseDate': {
+                    const aDate = a.set?.releaseDate || '';
+                    const bDate = b.set?.releaseDate || '';
+                    return aDate.localeCompare(bDate) * direction;
+                }
+
+                default:
+                    return 0;
+            }
+        });
+
+        setFilteredCards(result);
+    };
 
     const loadDefaultCards = async () => {
         try {
@@ -158,7 +318,9 @@ export const usePokemonSearch = () => {
         console.log("Recherche de cartes Pokémon:", query);
         setIsLoading(true);
         setPokemonCards([]);
+        setFilteredCards([]);
         setVisibleCards(CARDS_PER_PAGE);
+        setPricesLoaded(false);
 
         try {
             // Vérifier si la requête contient plusieurs termes séparés par des virgules
@@ -202,6 +364,7 @@ export const usePokemonSearch = () => {
                         "Essayez un autre terme de recherche ou vérifiez l'orthographe.",
                 });
                 setIsLoading(false);
+                addSearchToHistory(query, 0);
                 return;
             }
 
@@ -240,6 +403,9 @@ export const usePokemonSearch = () => {
             const cardsWithDetails = await Promise.all(detailsPromises);
             setPokemonCards(cardsWithDetails);
 
+            // Ajouter la recherche à l'historique
+            addSearchToHistory(query, cardsWithDetails.length);
+
             toast({
                 title:
                     cardsWithDetails.length > 1 ? "Cartes trouvées !" : "Carte trouvée !",
@@ -255,6 +421,9 @@ export const usePokemonSearch = () => {
                         ? error.message
                         : "Impossible de compléter la recherche pour le moment.",
             });
+
+            // Ajouter quand même à l'historique pour garder une trace de l'échec
+            addSearchToHistory(query, 0);
         } finally {
             setIsLoading(false);
         }
@@ -264,12 +433,131 @@ export const usePokemonSearch = () => {
         setVisibleCards((prevValue) => prevValue + CARDS_PER_PAGE);
     };
 
+    // Fonction pour charger les prix du marché
+    const loadMarketPrices = async () => {
+        // Ne pas charger si déjà en cours ou déjà fait
+        if (pricesLoading || pricesLoaded) return;
+
+        setPricesLoading(true);
+
+        try {
+            // Utiliser uniquement les cartes filtrées visibles
+            const visibleFilteredCards = filteredCards.slice(0, visibleCards);
+
+            // Enrichir les cartes avec les prix
+            const cardsWithPrices = await marketPriceService.enrichCardsWithPrices(visibleFilteredCards);
+
+            // Mettre à jour les cartes avec les prix
+            setPokemonCards(prev => {
+                const newCards = [...prev];
+
+                // Pour chaque carte enrichie, mettre à jour la carte correspondante
+                cardsWithPrices.forEach(cardWithPrice => {
+                    const index = newCards.findIndex(c => c.id === cardWithPrice.id);
+                    if (index >= 0) {
+                        newCards[index] = cardWithPrice;
+                    }
+                });
+
+                return newCards;
+            });
+
+            setPricesLoaded(true);
+
+            toast({
+                title: "Prix du marché chargés",
+                description: "Les prix du marché ont été chargés avec succès pour les cartes visibles."
+            });
+        } catch (error) {
+            console.error("Erreur lors du chargement des prix:", error);
+
+            toast({
+                variant: "destructive",
+                title: "Erreur de chargement des prix",
+                description: "Impossible de charger les prix du marché pour le moment."
+            });
+        } finally {
+            setPricesLoading(false);
+        }
+    };
+
+    // Fonctions pour la mise à jour des filtres
+    const updateTypeFilter = (type: string, isSelected: boolean) => {
+        setFilters(prev => {
+            if (isSelected) {
+                return { ...prev, types: [...prev.types, type] };
+            } else {
+                return { ...prev, types: prev.types.filter(t => t !== type) };
+            }
+        });
+    };
+
+    const updateRarityFilter = (rarity: string, isSelected: boolean) => {
+        setFilters(prev => {
+            if (isSelected) {
+                return { ...prev, rarities: [...prev.rarities, rarity] };
+            } else {
+                return { ...prev, rarities: prev.rarities.filter(r => r !== rarity) };
+            }
+        });
+    };
+
+    const updateSetFilter = (set: string, isSelected: boolean) => {
+        setFilters(prev => {
+            if (isSelected) {
+                return { ...prev, sets: [...prev.sets, set] };
+            } else {
+                return { ...prev, sets: prev.sets.filter(s => s !== set) };
+            }
+        });
+    };
+
+    const updateHpRange = (min: number, max: number) => {
+        setFilters(prev => ({
+            ...prev,
+            minHp: min,
+            maxHp: max
+        }));
+    };
+
+    const resetFilters = () => {
+        setFilters({
+            types: [],
+            rarities: [],
+            sets: [],
+            minHp: 0,
+            maxHp: availableOptions.maxHp
+        });
+    };
+
+    const updateSortSettings = (newSettings: Partial<SortSettings>) => {
+        setSortSettings(prev => ({
+            ...prev,
+            ...newSettings
+        }));
+    };
+
     return {
         pokemonCards,
+        filteredCards,
         isLoading,
         searchPokemon,
         visibleCards,
         loadMore,
+        // Filtres et tri
+        filters,
+        sortSettings,
+        availableOptions,
+        updateTypeFilter,
+        updateRarityFilter,
+        updateSetFilter,
+        updateHpRange,
+        resetFilters,
+        updateSortSettings,
+        // Prix du marché
+        pricesLoading,
+        pricesLoaded,
+        loadMarketPrices
     };
 };
 
