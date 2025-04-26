@@ -11,6 +11,7 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 import Pokeball3D from "@/components/Pokeball3D";
+import { PointerDemo } from "@/components/PointerDemo";
 
 // Définition du type pour une carte Pokémon TCG
 interface PokemonCard {
@@ -603,6 +604,14 @@ const Index = () => {
         </Dialog>
 
         <FAQ />
+
+        {/* Démo du curseur Pokeball */}
+        <div className="mt-12 mb-16">
+          <h2 className="text-2xl font-bold text-center mb-8">
+            Interagissez avec nos curseurs Pokeball
+          </h2>
+          <PointerDemo />
+        </div>
       </main>
 
       <Footer />

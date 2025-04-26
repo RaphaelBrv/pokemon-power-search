@@ -42,7 +42,7 @@ const Pokeball3D: React.FC<{ className?: string }> = ({
 
       // 1. Scène
       threeContext.scene = new THREE.Scene();
-      threeContext.scene.background = new THREE.Color(0xd0d0d0);
+      threeContext.scene.background = null; // Fond transparent au lieu du gris
 
       // 2. Caméra
       threeContext.camera = new THREE.PerspectiveCamera(
@@ -54,7 +54,10 @@ const Pokeball3D: React.FC<{ className?: string }> = ({
       threeContext.camera.position.set(0, 1, 4);
 
       // 3. Renderer
-      threeContext.renderer = new THREE.WebGLRenderer({ antialias: true });
+      threeContext.renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true, // Rendre le fond transparent
+      });
       threeContext.renderer.setSize(
         currentMount.clientWidth,
         currentMount.clientHeight
