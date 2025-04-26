@@ -307,6 +307,7 @@ const Pokeball3D: React.FC<{ className?: string }> = ({
       threeContext.controls = null;
       threeContext.pokeballGroup = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Le tableau vide assure que l'effet ne s'exécute qu'une fois au montage/démontage
 
   // Rendu du composant: un div qui servira de point de montage pour le canvas Three.js
