@@ -1,4 +1,3 @@
-import React from "react";
 import { Card } from "./ui/card";
 import Pokeball3D from "./Pokeball3D";
 

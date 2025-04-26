@@ -10,7 +10,6 @@ import FAQ from "@/components/FAQ";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
-import Pokeball3D from "@/components/Pokeball3D";
 import { PointerDemo } from "@/components/PointerDemo";
 
 // Définition du type pour une carte Pokémon TCG
@@ -368,9 +367,7 @@ const Index = () => {
           <div className="md:w-2/3">
             <Hero />
           </div>
-          <div className="md:w-1/3 bg-white shadow-md rounded-lg overflow-hidden">
-            <Pokeball3D className="w-full h-64" />
-          </div>
+          
         </div>
 
         <div className="text-center mb-8">
