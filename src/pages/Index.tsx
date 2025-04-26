@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import SearchBar from "@/components/SearchBar";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import LoadingMessage from "@/components/LoadingMessage";

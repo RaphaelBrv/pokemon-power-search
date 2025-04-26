@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { X } from "lucide-react";
 import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { formatImageUrl } from "../lib/imageUtils";
