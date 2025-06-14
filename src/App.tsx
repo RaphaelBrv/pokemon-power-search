@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import { SearchHistoryProvider } from "@/contexts/SearchHistoryContext";
 import { DeckProvider } from "@/contexts/DeckContext";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { PokedexProvider } from "@/contexts/PokedexContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -13,23 +15,27 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <FavoritesProvider>
-      <SearchHistoryProvider>
-        <DeckProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </DeckProvider>
-      </SearchHistoryProvider>
-    </FavoritesProvider>
+    <AuthProvider>
+      <PokedexProvider>
+        <FavoritesProvider>
+          <SearchHistoryProvider>
+            <DeckProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </BrowserRouter>
+              </TooltipProvider>
+            </DeckProvider>
+          </SearchHistoryProvider>
+        </FavoritesProvider>
+      </PokedexProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

@@ -1,6 +1,10 @@
 import React from "react";
 import { formatImageUrl, formatSymbolUrl } from "../lib/imageUtils";
 import { PokemonCard } from "@/types/pokemon";
+import { Button } from "@/components/ui/button";
+import { Plus, Check } from "lucide-react";
+import { usePokedex } from "@/contexts/PokedexContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface PokemonCardItemProps {
   card: PokemonCard;
@@ -10,7 +14,12 @@ interface PokemonCardItemProps {
 const PokemonCardItem: React.FC<PokemonCardItemProps> = ({ card, onClick }) => {
   const [imageError, setImageError] = React.useState(false);
   const [retryCount, setRetryCount] = React.useState(0);
+  const [isAdding, setIsAdding] = React.useState(false);
   const maxRetries = 2;
+
+  const { user } = useAuth();
+  const { addCardToPokedex, isCardInPokedex } = usePokedex();
+  const isInPokedex = isCardInPokedex(card.id);
 
   const handleImageError = (
     e: React.SyntheticEvent<HTMLImageElement, Event>
@@ -37,16 +46,48 @@ const PokemonCardItem: React.FC<PokemonCardItemProps> = ({ card, onClick }) => {
     }
   };
 
+  const handleAddToPokedex = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Empêcher la propagation du clic vers la carte
+
+    if (!user) {
+      // L'utilisateur n'est pas connecté, on peut soit ouvrir le modal d'auth soit afficher un message
+      return;
+    }
+
+    setIsAdding(true);
+    await addCardToPokedex(card);
+    setIsAdding(false);
+  };
+
   if (imageError) {
     return null;
   }
 
   return (
     <div
-      className="pokemon-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transition-transform hover:scale-105"
+      className="pokemon-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transition-transform hover:scale-105 relative"
       onClick={() => onClick(card)}
     >
-      <div className="p-4">
+      {/* Bouton d'ajout au pokédex */}
+      <div className="absolute top-2 right-2 z-10">
+        <Button
+          size="sm"
+          variant={isInPokedex ? "secondary" : "default"}
+          className="h-8 w-8 p-0 rounded-full shadow-md"
+          onClick={handleAddToPokedex}
+          disabled={isAdding}
+        >
+          {isAdding ? (
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+          ) : isInPokedex ? (
+            <Check className="h-4 w-4" />
+          ) : (
+            <Plus className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
+
+      <div className="p-4 pr-12">
         <h3 className="text-lg font-semibold mb-1 capitalize">{card.name}</h3>
         <div className="text-sm text-gray-500 mb-2">
           {card.set?.name} · {card.localId}/{card.set?.cardCount?.total || "?"}
