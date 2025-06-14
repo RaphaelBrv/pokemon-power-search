@@ -1,36 +1,29 @@
-import { Card } from "./ui/card";
-import Pokeball3D from "./Pokeball3D";
+import React, { Suspense, lazy } from "react";
 
-const Hero = () => {
+// Lazy load du composant 3D lourd (Three.js)
+const Pokeball3D = lazy(() => import("./Pokeball3D"));
+
+const Hero: React.FC = () => {
   return (
-    <div className="text-center space-y-6 mb-12">
-      <h1 className="text-4xl font-bold text-gray-800 mb-4">
-        La Grande Aventure Pokédex : Votre Portail vers le Monde des Pokémon
+    <div className="text-center py-8 sm:py-12">
+      <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-800 mb-4">
+        Pokémon Power Search
       </h1>
-
-      <Pokeball3D className="w-full h-80 mx-auto max-w-xl my-8" />
-
-      <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-        Bienvenue, cher Dresseur, dans le monde extraordinaire des Pokémon ! Que
-        vous soyez un Champion d'Arène expérimenté ou que vous receviez
-        aujourd'hui votre tout premier Pokémon, ce Pokédex interactif sera votre
-        compagnon fidèle. Explorez les caractéristiques, découvrez les types et
-        plongez dans l'univers fascinant de ces créatures merveilleuses. Votre
-        quête de connaissance commence maintenant !
+      <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-2xl mx-auto px-4">
+        Découvrez et collectionnez vos cartes Pokémon préférées avec notre
+        moteur de recherche puissant et intuitif.
       </p>
 
-      <Card className="bg-yellow-50 p-6 max-w-2xl mx-auto">
-        <div className="flex items-center space-x-2 mb-2">
-          <span className="text-2xl">✨</span>
-          <h3 className="text-xl font-semibold">Le Saviez-vous ?</h3>
-        </div>
-        <p className="text-gray-700">
-          Saviez-vous que Rondoudou, avec sa voix mélodieuse, peut endormir
-          n'importe quel Pokémon en quelques secondes ? Même les plus puissants
-          Dracolosse ne peuvent résister à sa berceuse ! Quelle autre merveille
-          allez-vous découvrir aujourd'hui ?
-        </p>
-      </Card>
+      {/* Lazy loading du composant 3D avec fallback */}
+      <Suspense
+        fallback={
+          <div className="w-full h-64 sm:h-80 mx-auto max-w-xl my-8 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center shadow-2xl">
+            <div className="text-white text-xl font-bold">🔴</div>
+          </div>
+        }
+      >
+        <Pokeball3D className="w-full h-64 sm:h-80 mx-auto max-w-xl my-8" />
+      </Suspense>
     </div>
   );
 };

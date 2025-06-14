@@ -46,7 +46,9 @@ const Navbar: React.FC<React.HTMLAttributes<HTMLElement>> = ({
       {...props}
     >
       <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <div className="text-xl sm:text-2xl font-bold text-[#FFDE00]">Pokédx</div>
+        <div className="text-xl sm:text-2xl font-bold text-[#FFDE00]">
+          Pokédx
+        </div>
 
         {/* Desktop Navigation */}
         <div className="hidden lg:flex items-center space-x-4">
@@ -170,6 +172,21 @@ const Navbar: React.FC<React.HTMLAttributes<HTMLElement>> = ({
         {/* Mobile Navigation */}
         <div className="lg:hidden flex items-center space-x-2">
           {user && <UserPokedex />}
+
+          {/* Bouton de connexion mobile quand pas connecté */}
+          {!user && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setAuthModalOpen(true)}
+              disabled={loading}
+              className="bg-[#FFDE00] text-[#3B4CCA] hover:bg-[#FFDE00]/90 text-xs px-2"
+            >
+              <LogIn className="mr-1 h-3 w-3" />
+              Connexion
+            </Button>
+          )}
+
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="sm" className="text-white">
@@ -181,7 +198,7 @@ const Navbar: React.FC<React.HTMLAttributes<HTMLElement>> = ({
                 <div className="text-lg font-semibold text-[#3B4CCA]">
                   Navigation
                 </div>
-                
+
                 <Button variant="ghost" className="justify-start">
                   Explorer
                 </Button>
@@ -213,7 +230,7 @@ const Navbar: React.FC<React.HTMLAttributes<HTMLElement>> = ({
                           </p>
                         </div>
                       </div>
-                      
+
                       <Button variant="ghost" className="w-full justify-start">
                         <User className="mr-2 h-4 w-4" />
                         Profil
@@ -222,8 +239,8 @@ const Navbar: React.FC<React.HTMLAttributes<HTMLElement>> = ({
                         <Settings className="mr-2 h-4 w-4" />
                         Paramètres
                       </Button>
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         className="w-full justify-start text-red-600 hover:text-red-600"
                         onClick={handleSignOut}
                       >
@@ -232,17 +249,22 @@ const Navbar: React.FC<React.HTMLAttributes<HTMLElement>> = ({
                       </Button>
                     </div>
                   ) : (
-                    <Button
-                      className="w-full bg-[#3B4CCA] hover:bg-[#3B4CCA]/90"
-                      onClick={() => {
-                        setAuthModalOpen(true);
-                        setMobileMenuOpen(false);
-                      }}
-                      disabled={loading}
-                    >
-                      <LogIn className="mr-2 h-4 w-4" />
-                      Se connecter
-                    </Button>
+                    <div className="space-y-3">
+                      <p className="text-sm text-muted-foreground">
+                        Connectez-vous pour accéder à votre pokédex personnel
+                      </p>
+                      <Button
+                        className="w-full bg-[#3B4CCA] hover:bg-[#3B4CCA]/90"
+                        onClick={() => {
+                          setAuthModalOpen(true);
+                          setMobileMenuOpen(false);
+                        }}
+                        disabled={loading}
+                      >
+                        <LogIn className="mr-2 h-4 w-4" />
+                        Se connecter
+                      </Button>
+                    </div>
                   )}
                 </div>
               </div>
