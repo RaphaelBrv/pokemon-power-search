@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User, Session, AuthError } from "@supabase/supabase-js";
 import { supabase, Profile } from "@/lib/supabase";
+import { queryClient } from "@/lib/queryClient";
+import { authCache } from "@/lib/authCache";
 
 interface AuthContextType {
   user: User | null;
@@ -35,52 +37,134 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Récupérer la session actuelle
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      } else {
-        setLoading(false);
+    let isMounted = true;
+
+    const initializeAuth = async () => {
+      try {
+        // Récupérer la session actuelle avec timeout
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Session timeout")), 3000)
+        );
+
+        const {
+          data: { session },
+        } = (await Promise.race([sessionPromise, timeoutPromise])) as any;
+
+        if (!isMounted) return;
+
+        setSession(session);
+        setUser(session?.user ?? null);
+
+        if (session?.user) {
+          // Précharger le profil en parallèle
+          fetchProfile(session.user.id);
+        } else {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.warn(
+          "Timeout lors de la récupération de session, continuons sans session"
+        );
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-    });
+    };
+
+    initializeAuth();
 
     // Écouter les changements d'authentification
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return;
+
+      console.log("🔄 Auth state change:", event);
       setSession(session);
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        await fetchProfile(session.user.id);
+        // Optimisation: ne pas refetch le profil si on l'a déjà
+        if (
+          event === "SIGNED_IN" ||
+          !profile ||
+          profile.id !== session.user.id
+        ) {
+          await fetchProfile(session.user.id);
+        } else {
+          setLoading(false);
+        }
       } else {
         setProfile(null);
         setLoading(false);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (userId: string, retryCount = 0) => {
     try {
-      const { data, error } = await supabase
+      console.log("🔍 Récupération du profil pour:", userId);
+
+      // Vérifier d'abord le cache local
+      const cachedProfile = authCache.getProfile(userId);
+      if (cachedProfile) {
+        setProfile(cachedProfile);
+        setLoading(false);
+        return;
+      }
+
+      // Timeout pour éviter l'attente trop longue
+      const profilePromise = supabase
         .from("profiles")
         .select("*")
         .eq("id", userId)
         .single();
 
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Profile fetch timeout")), 2000)
+      );
+
+      const { data, error } = (await Promise.race([
+        profilePromise,
+        timeoutPromise,
+      ])) as any;
+
       if (error) {
         console.error("Erreur lors de la récupération du profil:", error);
-        // En cas d'erreur, on met profile à null mais on arrête le loading
+
+        // Retry une fois en cas d'erreur réseau
+        if (
+          retryCount === 0 &&
+          (error.message?.includes("timeout") ||
+            error.message?.includes("network"))
+        ) {
+          console.log("🔄 Retry de récupération du profil...");
+          return fetchProfile(userId, 1);
+        }
+
+        // En cas d'erreur persistante, continuer sans profil
         setProfile(null);
       } else {
+        console.log("✅ Profil récupéré:", data?.name || data?.email);
         setProfile(data);
+        // Mettre en cache le profil récupéré
+        authCache.setProfile(userId, data);
       }
     } catch (error) {
-      console.error("Erreur:", error);
+      console.error("Erreur générale:", error);
+
+      // Retry une fois en cas de timeout
+      if (retryCount === 0) {
+        console.log("🔄 Retry après timeout...");
+        return fetchProfile(userId, 1);
+      }
+
       setProfile(null);
     } finally {
       setLoading(false);
@@ -101,11 +185,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error };
+    try {
+      console.log("🔐 Tentative de connexion pour:", email);
+
+      // Timeout pour éviter l'attente trop longue
+      const signInPromise = supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Connexion timeout")), 8000)
+      );
+
+      const { error } = (await Promise.race([
+        signInPromise,
+        timeoutPromise,
+      ])) as any;
+
+      if (error) {
+        console.error("❌ Erreur de connexion:", error.message);
+      } else {
+        console.log("✅ Connexion réussie");
+      }
+
+      return { error };
+    } catch (error: any) {
+      console.error("❌ Timeout ou erreur de connexion:", error.message);
+      return {
+        error: {
+          message: "Connexion trop lente, veuillez réessayer",
+        } as AuthError,
+      };
+    }
   };
 
   const signOut = async () => {
@@ -129,6 +241,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setProfile(null);
         setSession(null);
 
+        // Invalider tout le cache TanStack Query lors de la déconnexion
+        queryClient.clear();
+        // Vider le cache d'authentification
+        authCache.clear();
+
         return { error };
       } catch (timeoutError) {
         console.warn(
@@ -138,6 +255,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setUser(null);
         setProfile(null);
         setSession(null);
+
+        // Invalider tout le cache TanStack Query lors de la déconnexion
+        queryClient.clear();
+        // Vider le cache d'authentification
+        authCache.clear();
+
         return { error: null };
       }
     } catch (error) {
@@ -146,6 +269,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUser(null);
       setProfile(null);
       setSession(null);
+
+      // Invalider tout le cache TanStack Query lors de la déconnexion
+      queryClient.clear();
+      // Vider le cache d'authentification
+      authCache.clear();
+
       return { error: error as AuthError };
     } finally {
       setLoading(false);

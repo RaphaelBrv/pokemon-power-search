@@ -42,8 +42,16 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
     e.preventDefault();
     setLoading(true);
 
+    // Feedback immédiat
+    toast({
+      title: "Connexion en cours...",
+      description: "Vérification de vos identifiants",
+    });
+
     try {
+      const startTime = Date.now();
       const { error } = await signIn(formData.email, formData.password);
+      const duration = Date.now() - startTime;
 
       if (error) {
         toast({
@@ -54,7 +62,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
       } else {
         toast({
           title: "Connexion réussie",
-          description: "Bienvenue dans votre pokédex !",
+          description: `Bienvenue dans votre pokédex ! (${duration}ms)`,
         });
         onOpenChange(false);
         setFormData({ email: "", password: "", name: "", confirmPassword: "" });

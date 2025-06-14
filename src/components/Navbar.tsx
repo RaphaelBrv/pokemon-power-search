@@ -22,6 +22,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { LogIn, LogOut, User, Settings, Menu, Bug } from "lucide-react";
 import AuthModal from "./AuthModal";
 import UserPokedex from "./UserPokedex";
+import PerformanceIndicator from "./PerformanceIndicator";
 import { testSupabaseConnection, debugSignOut } from "@/utils/supabase-test";
 
 // Utiliser directement React.HTMLAttributes<HTMLElement> pour les props
@@ -34,7 +35,16 @@ const Navbar: React.FC<React.HTMLAttributes<HTMLElement>> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   const handleSignOut = async () => {
-    await signOut();
+    console.log("🔧 Déconnexion en cours...");
+    try {
+      // Utiliser la même logique robuste que le debug
+      await debugSignOut();
+      await signOut();
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion:", error);
+      // Forcer la déconnexion même en cas d'erreur
+      await signOut();
+    }
     setMobileMenuOpen(false);
   };
 
@@ -59,8 +69,11 @@ const Navbar: React.FC<React.HTMLAttributes<HTMLElement>> = ({
       {...props}
     >
       <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <div className="text-xl sm:text-2xl font-bold text-[#FFDE00]">
-          Pokédx
+        <div className="flex items-center gap-3">
+          <div className="text-xl sm:text-2xl font-bold text-[#FFDE00]">
+            Pokédx
+          </div>
+          <PerformanceIndicator isVisible={!!user} />
         </div>
 
         {/* Desktop Navigation */}
