@@ -111,14 +111,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const signOut = async () => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signOut();
 
-      // Force la réinitialisation des états même si signOut a une erreur
-      setUser(null);
-      setProfile(null);
-      setSession(null);
+      // Timeout pour éviter d'attendre indéfiniment
+      const signOutPromise = supabase.auth.signOut();
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Timeout de déconnexion")), 5000)
+      );
 
-      return { error };
+      try {
+        const { error } = (await Promise.race([
+          signOutPromise,
+          timeoutPromise,
+        ])) as any;
+
+        // Force la réinitialisation des états même en cas d'erreur
+        setUser(null);
+        setProfile(null);
+        setSession(null);
+
+        return { error };
+      } catch (timeoutError) {
+        console.warn(
+          "Timeout lors de la déconnexion, forçage de la déconnexion locale"
+        );
+        // En cas de timeout, on force la déconnexion locale
+        setUser(null);
+        setProfile(null);
+        setSession(null);
+        return { error: null };
+      }
     } catch (error) {
       console.error("Erreur lors de la déconnexion:", error);
       // En cas d'erreur, force quand même la déconnexion côté client

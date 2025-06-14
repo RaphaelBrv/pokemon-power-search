@@ -64,25 +64,29 @@ export default function UserPokedex() {
     // Convertir UserPokemonCard vers PokemonCard pour le modal
     const pokemonCard: PokemonCard = {
       id: userCard.card_id,
-      localId: userCard.card_id.split('-')[1] || "1",
+      localId: userCard.card_id.split("-")[1] || "1",
       name: userCard.card_name,
       image: userCard.card_image_url || "",
       types: userCard.card_type ? [userCard.card_type] : undefined,
       hp: userCard.hp?.toString(),
       rarity: userCard.card_rarity,
-      set: userCard.card_set ? {
-        id: "unknown",
-        name: userCard.card_set,
-        logo: "",
-        symbol: "",
-      } : undefined,
-      marketPrices: userCard.market_price ? {
-        low: userCard.market_price * 0.8,
-        mid: userCard.market_price,
-        high: userCard.market_price * 1.2,
-        market: userCard.market_price,
-        lastUpdated: new Date().toISOString(),
-      } : undefined,
+      set: userCard.card_set
+        ? {
+            id: "unknown",
+            name: userCard.card_set,
+            logo: "",
+            symbol: "",
+          }
+        : undefined,
+      marketPrices: userCard.market_price
+        ? {
+            low: userCard.market_price * 0.8,
+            mid: userCard.market_price,
+            high: userCard.market_price * 1.2,
+            market: userCard.market_price,
+            lastUpdated: new Date().toISOString(),
+          }
+        : undefined,
     };
     setSelectedCard(pokemonCard);
   };
@@ -91,6 +95,9 @@ export default function UserPokedex() {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <span className="ml-4 text-sm text-muted-foreground">
+          Chargement de votre pokédex...
+        </span>
       </div>
     );
   }
@@ -127,15 +134,15 @@ export default function UserPokedex() {
                 Votre pokédex est vide
               </h3>
               <p className="text-sm sm:text-base text-muted-foreground">
-                Commencez à ajouter des cartes à votre collection en cliquant sur
-                le bouton "+" sur les cartes que vous trouvez !
+                Commencez à ajouter des cartes à votre collection en cliquant
+                sur le bouton "+" sur les cartes que vous trouvez !
               </p>
             </div>
           ) : (
             <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {userCards.map((card) => (
-                <Card 
-                  key={card.id} 
+                <Card
+                  key={card.id}
                   className="relative cursor-pointer hover:shadow-lg transition-shadow"
                   onClick={() => handleCardClick(card)}
                 >
@@ -180,7 +187,9 @@ export default function UserPokedex() {
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             target.style.display = "none";
-                            target.nextElementSibling?.classList.remove("hidden");
+                            target.nextElementSibling?.classList.remove(
+                              "hidden"
+                            );
                           }}
                         />
                       ) : null}
@@ -304,7 +313,10 @@ export default function UserPokedex() {
                         onChange={(e) =>
                           setEditForm((prev) => ({
                             ...prev,
-                            quantity: Math.max(1, parseInt(e.target.value) || 1),
+                            quantity: Math.max(
+                              1,
+                              parseInt(e.target.value) || 1
+                            ),
                           }))
                         }
                         className="w-20 text-center"

@@ -44,8 +44,10 @@ export const PokedexProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     if (user) {
+      console.log("User connecté, récupération des cartes...");
       fetchUserCards();
     } else {
+      console.log("Aucun utilisateur connecté, réinitialisation des cartes");
       setUserCards([]);
       setLoading(false);
     }
@@ -59,43 +61,37 @@ export const PokedexProvider: React.FC<{ children: React.ReactNode }> = ({
 
     setLoading(true);
     try {
-      // Timeout de 10 secondes pour éviter le loading permanent
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Timeout")), 10000)
-      );
+      console.log("Récupération des cartes pour l'utilisateur:", user.id);
 
-      const queryPromise = supabase
+      const { data, error } = await supabase
         .from("user_pokemon_cards")
         .select("*")
         .eq("user_id", user.id)
         .order("added_at", { ascending: false });
 
-      const { data, error } = (await Promise.race([
-        queryPromise,
-        timeoutPromise,
-      ])) as any;
-
       if (error) {
-        console.error("Erreur lors de la récupération des cartes:", error);
+        console.error(
+          "Erreur Supabase lors de la récupération des cartes:",
+          error
+        );
         toast({
           title: "Erreur",
-          description: "Impossible de charger votre collection",
+          description: `Impossible de charger votre collection: ${error.message}`,
           variant: "destructive",
         });
         setUserCards([]);
       } else {
+        console.log("Cartes récupérées:", data?.length || 0);
         setUserCards(data || []);
       }
     } catch (error) {
-      console.error("Erreur:", error);
+      console.error("Erreur générale:", error);
       setUserCards([]);
-      if (error.message !== "Timeout") {
-        toast({
-          title: "Erreur",
-          description: "Problème de connexion",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Erreur",
+        description: "Problème de connexion avec la base de données",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }

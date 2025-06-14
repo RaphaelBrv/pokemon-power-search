@@ -19,9 +19,10 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
-import { LogIn, LogOut, User, Settings, Menu } from "lucide-react";
+import { LogIn, LogOut, User, Settings, Menu, Bug } from "lucide-react";
 import AuthModal from "./AuthModal";
 import UserPokedex from "./UserPokedex";
+import { testSupabaseConnection, debugSignOut } from "@/utils/supabase-test";
 
 // Utiliser directement React.HTMLAttributes<HTMLElement> pour les props
 const Navbar: React.FC<React.HTMLAttributes<HTMLElement>> = ({
@@ -35,6 +36,18 @@ const Navbar: React.FC<React.HTMLAttributes<HTMLElement>> = ({
   const handleSignOut = async () => {
     await signOut();
     setMobileMenuOpen(false);
+  };
+
+  const handleDebugSupabase = async () => {
+    console.log("🔧 Débogage Supabase...");
+    await testSupabaseConnection();
+  };
+
+  const handleDebugSignOut = async () => {
+    console.log("🔧 Test de déconnexion Supabase...");
+    await debugSignOut();
+    console.log("🔧 Tentative de déconnexion via AuthContext...");
+    await signOut();
   };
 
   return (
@@ -107,6 +120,15 @@ const Navbar: React.FC<React.HTMLAttributes<HTMLElement>> = ({
             {user ? (
               <>
                 <UserPokedex />
+                {/* Bouton de débogage temporaire */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDebugSupabase}
+                  className="bg-orange-500 text-white hover:bg-orange-600"
+                >
+                  <Bug className="h-4 w-4" />
+                </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -147,6 +169,10 @@ const Navbar: React.FC<React.HTMLAttributes<HTMLElement>> = ({
                       <span>Paramètres</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleDebugSignOut}>
+                      <Bug className="mr-2 h-4 w-4" />
+                      <span>Debug Déconnexion</span>
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleSignOut}>
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Se déconnecter</span>
