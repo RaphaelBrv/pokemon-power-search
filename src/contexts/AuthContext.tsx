@@ -74,11 +74,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (error) {
         console.error("Erreur lors de la récupération du profil:", error);
+        // En cas d'erreur, on met profile à null mais on arrête le loading
+        setProfile(null);
       } else {
         setProfile(data);
       }
     } catch (error) {
       console.error("Erreur:", error);
+      setProfile(null);
     } finally {
       setLoading(false);
     }
@@ -106,8 +109,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    return { error };
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signOut();
+
+      // Force la réinitialisation des états même si signOut a une erreur
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+
+      return { error };
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion:", error);
+      // En cas d'erreur, force quand même la déconnexion côté client
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+      return { error: error as AuthError };
+    } finally {
+      setLoading(false);
+    }
   };
 
   const updateProfile = async (updates: Partial<Profile>) => {

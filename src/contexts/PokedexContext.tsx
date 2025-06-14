@@ -47,19 +47,33 @@ export const PokedexProvider: React.FC<{ children: React.ReactNode }> = ({
       fetchUserCards();
     } else {
       setUserCards([]);
+      setLoading(false);
     }
   }, [user]);
 
   const fetchUserCards = async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Timeout de 10 secondes pour éviter le loading permanent
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Timeout")), 10000)
+      );
+
+      const queryPromise = supabase
         .from("user_pokemon_cards")
         .select("*")
         .eq("user_id", user.id)
         .order("added_at", { ascending: false });
+
+      const { data, error } = (await Promise.race([
+        queryPromise,
+        timeoutPromise,
+      ])) as any;
 
       if (error) {
         console.error("Erreur lors de la récupération des cartes:", error);
@@ -68,11 +82,20 @@ export const PokedexProvider: React.FC<{ children: React.ReactNode }> = ({
           description: "Impossible de charger votre collection",
           variant: "destructive",
         });
+        setUserCards([]);
       } else {
         setUserCards(data || []);
       }
     } catch (error) {
       console.error("Erreur:", error);
+      setUserCards([]);
+      if (error.message !== "Timeout") {
+        toast({
+          title: "Erreur",
+          description: "Problème de connexion",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
