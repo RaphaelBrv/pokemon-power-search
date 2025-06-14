@@ -73,39 +73,41 @@ const PokemonCardItem: React.FC<PokemonCardItemProps> = ({ card, onClick }) => {
         <Button
           size="sm"
           variant={isInPokedex ? "secondary" : "default"}
-          className="h-8 w-8 p-0 rounded-full shadow-md"
+          className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full shadow-md text-xs"
           onClick={handleAddToPokedex}
           disabled={isAdding}
         >
           {isAdding ? (
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+            <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white"></div>
           ) : isInPokedex ? (
-            <Check className="h-4 w-4" />
+            <Check className="h-3 w-3 sm:h-4 sm:w-4" />
           ) : (
-            <Plus className="h-4 w-4" />
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
           )}
         </Button>
       </div>
 
-      <div className="p-4 pr-12">
-        <h3 className="text-lg font-semibold mb-1 capitalize">{card.name}</h3>
-        <div className="text-sm text-gray-500 mb-2">
+      <div className="p-3 sm:p-4 pr-10 sm:pr-12">
+        <h3 className="text-base sm:text-lg font-semibold mb-1 capitalize">
+          {card.name}
+        </h3>
+        <div className="text-xs sm:text-sm text-gray-500 mb-2">
           {card.set?.name} · {card.localId}/{card.set?.cardCount?.total || "?"}
         </div>
       </div>
 
-      <div className="px-4 pb-4">
+      <div className="px-3 sm:px-4 pb-3 sm:pb-4">
         <img
           src={card.image}
           alt={card.name}
-          className="w-full h-auto rounded-md mx-auto"
+          className="w-full h-auto rounded-md mx-auto max-h-64 sm:max-h-80 object-contain"
           loading="lazy"
           onError={handleImageError}
         />
       </div>
 
       {card.types && (
-        <div className="px-4 pb-4 flex flex-wrap gap-2">
+        <div className="px-3 sm:px-4 pb-3 sm:pb-4 flex flex-wrap gap-1 sm:gap-2">
           {card.types.map((type, index) => (
             <span
               key={index}
@@ -118,12 +120,12 @@ const PokemonCardItem: React.FC<PokemonCardItemProps> = ({ card, onClick }) => {
       )}
 
       {card.set && (
-        <div className="px-4 pb-4 flex items-center gap-2">
+        <div className="px-3 sm:px-4 pb-3 sm:pb-4 flex items-center gap-2">
           {card.set.symbol && (
             <img
               src={card.set.symbol}
               alt={`Symbole ${card.set.name}`}
-              className="w-6 h-6"
+              className="w-5 h-5 sm:w-6 sm:h-6"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 if (
@@ -138,12 +140,12 @@ const PokemonCardItem: React.FC<PokemonCardItemProps> = ({ card, onClick }) => {
               }}
             />
           )}
-          <span className="text-sm">{card.set.name}</span>
+          <span className="text-xs sm:text-sm truncate">{card.set.name}</span>
         </div>
       )}
 
       {card.illustrator && (
-        <div className="px-4 pb-4 text-xs text-gray-500">
+        <div className="px-3 sm:px-4 pb-3 sm:pb-4 text-xs text-gray-500">
           Illustrateur: {card.illustrator}
         </div>
       )}

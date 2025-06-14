@@ -16,9 +16,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
-import { LogIn, LogOut, User, Settings } from "lucide-react";
+import { LogIn, LogOut, User, Settings, Menu } from "lucide-react";
 import AuthModal from "./AuthModal";
 import UserPokedex from "./UserPokedex";
 
@@ -29,22 +30,26 @@ const Navbar: React.FC<React.HTMLAttributes<HTMLElement>> = ({
 }) => {
   const { user, profile, signOut, loading } = useAuth();
   const [authModalOpen, setAuthModalOpen] = React.useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   const handleSignOut = async () => {
     await signOut();
+    setMobileMenuOpen(false);
   };
+
   return (
     <nav
       className={cn(
-        "w-full bg-[#3B4CCA] text-white py-4 px-6 mb-8", // Classes par défaut
-        className // Classes externes passées via la prop
+        "w-full bg-[#3B4CCA] text-white py-4 px-4 sm:px-6 mb-8", // Responsive padding
+        className
       )}
       {...props}
     >
       <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <div className="text-2xl font-bold text-[#FFDE00]">Pokédex</div>
+        <div className="text-xl sm:text-2xl font-bold text-[#FFDE00]">Pokédx</div>
 
-        <div className="flex items-center space-x-4">
+        {/* Desktop Navigation */}
+        <div className="hidden lg:flex items-center space-x-4">
           <NavigationMenu>
             <NavigationMenuList>
               <NavigationMenuItem>
@@ -52,7 +57,7 @@ const Navbar: React.FC<React.HTMLAttributes<HTMLElement>> = ({
                   Explorer
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <ul className="grid gap-3 p-6 w-[400px]">
+                  <ul className="grid gap-3 p-6 w-[300px] md:w-[400px]">
                     <li className="row-span-3">
                       <NavigationMenuLink asChild>
                         <a
@@ -77,7 +82,7 @@ const Navbar: React.FC<React.HTMLAttributes<HTMLElement>> = ({
                   Curiosités
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <ul className="grid w-[400px] gap-3 p-4">
+                  <ul className="grid w-[300px] md:w-[400px] gap-3 p-4">
                     <li className="row-span-3">
                       <span className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-[#FFDE00] to-[#B3A125] p-6 no-underline outline-none focus:shadow-md">
                         <div className="mb-2 mt-4 text-lg font-medium">
@@ -95,7 +100,7 @@ const Navbar: React.FC<React.HTMLAttributes<HTMLElement>> = ({
             </NavigationMenuList>
           </NavigationMenu>
 
-          {/* Boutons d'authentification et pokédex */}
+          {/* Desktop Auth */}
           <div className="flex items-center space-x-2">
             {user ? (
               <>
@@ -155,14 +160,98 @@ const Navbar: React.FC<React.HTMLAttributes<HTMLElement>> = ({
                 className="bg-[#FFDE00] text-[#3B4CCA] hover:bg-[#FFDE00]/90"
               >
                 <LogIn className="mr-2 h-4 w-4" />
-                Se connecter
+                <span className="hidden sm:inline">Se connecter</span>
+                <span className="sm:hidden">Connexion</span>
               </Button>
             )}
           </div>
         </div>
 
-        <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} />
+        {/* Mobile Navigation */}
+        <div className="lg:hidden flex items-center space-x-2">
+          {user && <UserPokedex />}
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="sm" className="text-white">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+              <div className="flex flex-col space-y-4 mt-6">
+                <div className="text-lg font-semibold text-[#3B4CCA]">
+                  Navigation
+                </div>
+                
+                <Button variant="ghost" className="justify-start">
+                  Explorer
+                </Button>
+                <Button variant="ghost" className="justify-start">
+                  Curiosités
+                </Button>
+
+                <div className="border-t pt-4">
+                  {user ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage
+                            src={profile?.avatar_url}
+                            alt={profile?.name || user.email}
+                          />
+                          <AvatarFallback className="bg-[#FFDE00] text-[#3B4CCA]">
+                            {(profile?.name || user.email)
+                              ?.charAt(0)
+                              .toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col">
+                          {profile?.name && (
+                            <p className="font-medium">{profile.name}</p>
+                          )}
+                          <p className="text-sm text-muted-foreground truncate">
+                            {user.email}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <Button variant="ghost" className="w-full justify-start">
+                        <User className="mr-2 h-4 w-4" />
+                        Profil
+                      </Button>
+                      <Button variant="ghost" className="w-full justify-start">
+                        <Settings className="mr-2 h-4 w-4" />
+                        Paramètres
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start text-red-600 hover:text-red-600"
+                        onClick={handleSignOut}
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Se déconnecter
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      className="w-full bg-[#3B4CCA] hover:bg-[#3B4CCA]/90"
+                      onClick={() => {
+                        setAuthModalOpen(true);
+                        setMobileMenuOpen(false);
+                      }}
+                      disabled={loading}
+                    >
+                      <LogIn className="mr-2 h-4 w-4" />
+                      Se connecter
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
+
+      <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} />
     </nav>
   );
 };

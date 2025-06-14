@@ -292,17 +292,19 @@ const PageContent = () => {
         </div>
       </Navbar>
 
-      <main className="flex-grow container mx-auto px-4 py-8 max-w-7xl">
+      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl">
         {cursorContent && <Pointer>{cursorContent}</Pointer>}
 
-        <div className="text-center mb-12">
+        <div className="text-center mb-8 sm:mb-12">
           <Hero />
         </div>
 
         <div
-          className={`bg-gray-100 p-6 rounded-lg shadow-md mb-6 border-t-4 border-[${pokemonRed}]`}
+          className={`bg-gray-100 p-4 sm:p-6 rounded-lg shadow-md mb-6 border-t-4 border-[${pokemonRed}]`}
         >
-          <p className={`text-xl text-center text-[${pokemonBlack}] mb-6`}>
+          <p
+            className={`text-lg sm:text-xl text-center text-[${pokemonBlack}] mb-4 sm:mb-6`}
+          >
             Quelle carte Pokémon recherchez-vous aujourd'hui ?
           </p>
           <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -318,7 +320,7 @@ const PageContent = () => {
               className="w-full sm:w-auto flex-shrink-0 gap-2"
             >
               <Filter className="h-4 w-4" />
-              <span>
+              <span className="text-sm">
                 {showFilters ? "Masquer les filtres" : "Filtres avancés"}
               </span>
             </Button>
@@ -326,8 +328,8 @@ const PageContent = () => {
         </div>
 
         {showFilters && (
-          <div className="mb-6 bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="mb-6 bg-gray-50 p-3 sm:p-4 rounded-lg shadow-sm border border-gray-200">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               <FilterPanel
                 filters={filters}
                 availableOptions={availableOptions}
@@ -337,7 +339,7 @@ const PageContent = () => {
                 updateHpRange={updateHpRange}
                 resetFilters={resetFilters}
               />
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 <SortPanel
                   sortSettings={sortSettings}
                   updateSortSettings={updateSortSettings}
@@ -352,7 +354,7 @@ const PageContent = () => {
                   ) : (
                     <Coins className="h-4 w-4" />
                   )}
-                  <span>
+                  <span className="text-sm sm:text-base">
                     {pricesLoaded ? "Prix chargés" : "Charger les prix"}
                   </span>
                 </Button>
@@ -361,7 +363,7 @@ const PageContent = () => {
           </div>
         )}
 
-        <div className="mb-12 min-h-[200px]">
+        <div className="mb-8 sm:mb-12 min-h-[200px]">
           {isLoading && (
             <div className="flex flex-col items-center justify-center space-y-4 py-10">
               <LoadingSpinner />
@@ -370,15 +372,15 @@ const PageContent = () => {
           )}
 
           {!isLoading && pokemonCards.length > 0 && !hasSearched && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <h2
-                className={`text-3xl font-bold text-center text-[${pokemonBlack}]`}
+                className={`text-2xl sm:text-3xl font-bold text-center text-[${pokemonBlack}]`}
               >
                 Cartes Pokémon populaires
               </h2>
-              <div className="bg-white rounded-lg shadow-inner p-4 border border-gray-200">
+              <div className="bg-white rounded-lg shadow-inner p-3 sm:p-4 border border-gray-200">
                 <h3
-                  className={`text-xl font-semibold mb-4 text-center text-[${pokemonBlack}]`}
+                  className={`text-lg sm:text-xl font-semibold mb-4 text-center text-[${pokemonBlack}]`}
                 >
                   Cliquez sur une carte pour voir les détails
                 </h3>
@@ -387,13 +389,16 @@ const PageContent = () => {
                   pauseOnHover
                   style={
                     {
-                      "--gap": "1rem",
+                      "--gap": "0.5rem",
                       "--duration": "40s",
                     } as React.CSSProperties
                   }
                 >
                   {pokemonCards.map((card) => (
-                    <div key={card.id} className="mx-2 w-48 shrink-0">
+                    <div
+                      key={card.id}
+                      className="mx-1 sm:mx-2 w-40 sm:w-48 shrink-0"
+                    >
                       <PokemonCardItem card={card} onClick={handleCardClick} />
                     </div>
                   ))}
@@ -403,10 +408,12 @@ const PageContent = () => {
           )}
 
           {!isLoading && hasSearched && (
-            <div>
+            <div className="px-2 sm:px-0">
               {filteredCards.length === 0 ? (
                 <div className="text-center py-10 text-gray-500">
-                  <p>Aucune carte ne correspond à vos critères.</p>
+                  <p className="text-base sm:text-lg">
+                    Aucune carte ne correspond à vos critères.
+                  </p>
                   <p className="text-sm mt-2">
                     Essayez de modifier vos filtres ou votre recherche.
                   </p>
@@ -423,7 +430,9 @@ const PageContent = () => {
           )}
         </div>
 
-        <FAQ />
+        <div className="px-2 sm:px-0">
+          <FAQ />
+        </div>
       </main>
 
       <Footer className={`bg-[${pokemonBlack}] text-[${pokemonWhite}] mt-12`} />

@@ -127,23 +127,29 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="w-[95vw] max-w-[400px] sm:max-w-md p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="text-center">
+          <DialogTitle className="text-center text-lg sm:text-xl">
             Accédez à votre Pokédex
           </DialogTitle>
         </DialogHeader>
 
         <Tabs defaultValue="signin" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin">Connexion</TabsTrigger>
-            <TabsTrigger value="signup">Inscription</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="signin" className="text-xs sm:text-sm">
+              Connexion
+            </TabsTrigger>
+            <TabsTrigger value="signup" className="text-xs sm:text-sm">
+              Inscription
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="signin" className="space-y-4">
             <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="signin-email">Email</Label>
+                <Label htmlFor="signin-email" className="text-sm sm:text-base">
+                  Email
+                </Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -153,14 +159,19 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                     placeholder="votre@email.com"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="pl-10"
+                    className="pl-10 text-sm sm:text-base"
                     required
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="signin-password">Mot de passe</Label>
+                <Label
+                  htmlFor="signin-password"
+                  className="text-sm sm:text-base"
+                >
+                  Mot de passe
+                </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -170,7 +181,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                     placeholder="••••••••"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="pl-10 pr-10"
+                    className="pl-10 pr-10 text-sm sm:text-base"
                     required
                   />
                   <Button
@@ -189,7 +200,11 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button
+                type="submit"
+                className="w-full h-10 sm:h-11 text-sm sm:text-base"
+                disabled={loading}
+              >
                 {loading ? "Connexion..." : "Se connecter"}
               </Button>
             </form>
@@ -198,7 +213,9 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           <TabsContent value="signup" className="space-y-4">
             <form onSubmit={handleSignUp} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="signup-name">Nom (optionnel)</Label>
+                <Label htmlFor="signup-name" className="text-sm sm:text-base">
+                  Nom (optionnel)
+                </Label>
                 <div className="relative">
                   <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -208,13 +225,15 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                     placeholder="Votre nom"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="pl-10"
+                    className="pl-10 text-sm sm:text-base"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="signup-email">Email</Label>
+                <Label htmlFor="signup-email" className="text-sm sm:text-base">
+                  Email
+                </Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -224,14 +243,19 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                     placeholder="votre@email.com"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="pl-10"
+                    className="pl-10 text-sm sm:text-base"
                     required
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="signup-password">Mot de passe</Label>
+                <Label
+                  htmlFor="signup-password"
+                  className="text-sm sm:text-base"
+                >
+                  Mot de passe
+                </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -241,7 +265,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
                     placeholder="••••••••"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="pl-10 pr-10"
+                    className="pl-10 pr-10 text-sm sm:text-base"
                     required
                   />
                   <Button
@@ -261,25 +285,32 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirm-password">
+                <Label
+                  htmlFor="signup-confirm-password"
+                  className="text-sm sm:text-base"
+                >
                   Confirmer le mot de passe
                 </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
-                    id="confirm-password"
+                    id="signup-confirm-password"
                     name="confirmPassword"
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
-                    className="pl-10"
+                    className="pl-10 text-sm sm:text-base"
                     required
                   />
                 </div>
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button
+                type="submit"
+                className="w-full h-10 sm:h-11 text-sm sm:text-base"
+                disabled={loading}
+              >
                 {loading ? "Inscription..." : "S'inscrire"}
               </Button>
             </form>

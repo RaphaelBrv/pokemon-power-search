@@ -36,10 +36,15 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   resetFilters,
 }) => {
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold">Filtres</h3>
-        <Button variant="outline" size="sm" onClick={resetFilters}>
+    <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 border border-gray-200">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4">
+        <h3 className="text-base sm:text-lg font-semibold">Filtres</h3>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={resetFilters}
+          className="text-xs sm:text-sm w-full sm:w-auto"
+        >
           Réinitialiser
         </Button>
       </div>
@@ -47,11 +52,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       <Accordion type="multiple" defaultValue={["types", "hp"]}>
         {/* Filtre par type */}
         <AccordionItem value="types">
-          <AccordionTrigger className="text-sm font-medium">
+          <AccordionTrigger className="text-sm font-medium py-2 sm:py-3">
             Types de Pokémon
           </AccordionTrigger>
           <AccordionContent>
-            <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
+            <div className="space-y-2 max-h-40 sm:max-h-48 overflow-y-auto pr-2">
               {availableOptions.types.map((type) => (
                 <div key={type} className="flex items-center space-x-2">
                   <Checkbox
@@ -63,14 +68,14 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                   />
                   <Label
                     htmlFor={`type-${type}`}
-                    className="text-sm cursor-pointer flex-1"
+                    className="text-xs sm:text-sm cursor-pointer flex-1"
                   >
                     {type}
                   </Label>
                 </div>
               ))}
               {availableOptions.types.length === 0 && (
-                <p className="text-sm text-gray-500 italic">
+                <p className="text-xs sm:text-sm text-gray-500 italic">
                   Aucun type disponible
                 </p>
               )}
@@ -80,11 +85,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 
         {/* Filtre par rareté */}
         <AccordionItem value="rarity">
-          <AccordionTrigger className="text-sm font-medium">
+          <AccordionTrigger className="text-sm font-medium py-2 sm:py-3">
             Raretés
           </AccordionTrigger>
           <AccordionContent>
-            <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
+            <div className="space-y-2 max-h-40 sm:max-h-48 overflow-y-auto pr-2">
               {availableOptions.rarities.map((rarity) => (
                 <div key={rarity} className="flex items-center space-x-2">
                   <Checkbox
@@ -96,14 +101,14 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                   />
                   <Label
                     htmlFor={`rarity-${rarity}`}
-                    className="text-sm cursor-pointer flex-1"
+                    className="text-xs sm:text-sm cursor-pointer flex-1"
                   >
                     {rarity}
                   </Label>
                 </div>
               ))}
               {availableOptions.rarities.length === 0 && (
-                <p className="text-sm text-gray-500 italic">
+                <p className="text-xs sm:text-sm text-gray-500 italic">
                   Aucune rareté disponible
                 </p>
               )}
@@ -113,11 +118,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 
         {/* Filtre par extension */}
         <AccordionItem value="sets">
-          <AccordionTrigger className="text-sm font-medium">
+          <AccordionTrigger className="text-sm font-medium py-2 sm:py-3">
             Extensions
           </AccordionTrigger>
           <AccordionContent>
-            <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
+            <div className="space-y-2 max-h-40 sm:max-h-48 overflow-y-auto pr-2">
               {availableOptions.sets.map((set) => (
                 <div key={set} className="flex items-center space-x-2">
                   <Checkbox
@@ -129,14 +134,14 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                   />
                   <Label
                     htmlFor={`set-${set}`}
-                    className="text-sm cursor-pointer flex-1"
+                    className="text-xs sm:text-sm cursor-pointer flex-1 break-words"
                   >
                     {set}
                   </Label>
                 </div>
               ))}
               {availableOptions.sets.length === 0 && (
-                <p className="text-sm text-gray-500 italic">
+                <p className="text-xs sm:text-sm text-gray-500 italic">
                   Aucune extension disponible
                 </p>
               )}
@@ -146,7 +151,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 
         {/* Filtre par points de vie */}
         <AccordionItem value="hp">
-          <AccordionTrigger className="text-sm font-medium">
+          <AccordionTrigger className="text-sm font-medium py-2 sm:py-3">
             Points de vie (HP)
           </AccordionTrigger>
           <AccordionContent>
@@ -160,7 +165,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                 onValueChange={(values) => updateHpRange(values[0], values[1])}
                 className="mb-4"
               />
-              <div className="flex justify-between text-sm text-gray-500">
+              <div className="flex justify-between text-xs sm:text-sm text-gray-500">
                 <span>Min: {filters.minHp}</span>
                 <span>Max: {filters.maxHp}</span>
               </div>
