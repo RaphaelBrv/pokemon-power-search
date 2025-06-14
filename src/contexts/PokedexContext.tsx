@@ -130,18 +130,18 @@ export const PokedexProvider: React.FC<{ children: React.ReactNode }> = ({
         });
       } else {
         // Ajouter nouvelle carte
+        const imageUrl = card.image || null;
+
         const newCard: Omit<UserPokemonCard, "id" | "added_at"> = {
           user_id: user.id,
           card_id: card.id,
           card_name: card.name,
-          card_image_url: card.image?.small || card.image?.large,
+          card_image_url: imageUrl,
           card_set: card.set?.name,
           card_rarity: card.rarity,
           card_type: card.types?.[0],
           hp: card.hp ? parseInt(card.hp) : undefined,
-          market_price:
-            card.tcgplayer?.prices?.normal?.market ||
-            card.tcgplayer?.prices?.holofoil?.market,
+          market_price: card.marketPrices?.market,
           quantity,
           notes,
         };

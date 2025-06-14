@@ -130,15 +130,30 @@ export default function UserPokedex() {
                 </CardHeader>
 
                 <CardContent className="space-y-3">
-                  {card.card_image_url && (
-                    <div className="flex justify-center">
+                  <div className="flex justify-center">
+                    {card.card_image_url ? (
                       <img
                         src={card.card_image_url}
                         alt={card.card_name}
-                        className="w-24 h-32 object-contain rounded"
+                        className="w-24 h-32 object-contain rounded shadow-sm"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = "none";
+                          target.nextElementSibling?.classList.remove("hidden");
+                        }}
                       />
+                    ) : null}
+                    <div
+                      className={`w-24 h-32 bg-gray-100 rounded flex items-center justify-center ${
+                        card.card_image_url ? "hidden" : ""
+                      }`}
+                    >
+                      <div className="text-center text-gray-400">
+                        <BookOpen className="w-8 h-8 mx-auto mb-1" />
+                        <span className="text-xs">Pas d'image</span>
+                      </div>
                     </div>
-                  )}
+                  </div>
 
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
