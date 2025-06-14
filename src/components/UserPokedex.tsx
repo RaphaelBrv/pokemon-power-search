@@ -11,7 +11,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { usePokedex } from "@/contexts/PokedexContext";
+import {
+  useUserCards,
+  useUpdateCardInPokedex,
+  useRemoveCardFromPokedex,
+  usePokedexStats,
+} from "@/hooks/usePokedexQueries";
 import { UserPokemonCard } from "@/lib/supabase";
 import { Trash2, Edit3, BookOpen, Plus, Minus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -20,14 +25,11 @@ import { PokemonCard } from "@/types/pokemon";
 import CardDetailModal from "@/components/CardDetailModal";
 
 export default function UserPokedex() {
-  const {
-    userCards,
-    loading,
-    removeCardFromPokedex,
-    updateCardInPokedex,
-    totalCards,
-    uniqueCards,
-  } = usePokedex();
+  const { data: userCards = [], isLoading: loading, error } = useUserCards();
+  const { totalCards, uniqueCards } = usePokedexStats();
+  const updateCardMutation = useUpdateCardInPokedex();
+  const removeCardMutation = useRemoveCardFromPokedex();
+
   const [editingCard, setEditingCard] = useState<UserPokemonCard | null>(null);
   const [selectedCard, setSelectedCard] = useState<PokemonCard | null>(null);
   const [editForm, setEditForm] = useState({ quantity: 1, notes: "" });
@@ -40,14 +42,20 @@ export default function UserPokedex() {
   const handleUpdateCard = async () => {
     if (!editingCard) return;
 
-    const success = await updateCardInPokedex(editingCard.id, {
-      quantity: editForm.quantity,
-      notes: editForm.notes,
-    });
-
-    if (success) {
-      setEditingCard(null);
-    }
+    updateCardMutation.mutate(
+      {
+        id: editingCard.id,
+        updates: {
+          quantity: editForm.quantity,
+          notes: editForm.notes,
+        },
+      },
+      {
+        onSuccess: () => {
+          setEditingCard(null);
+        },
+      }
+    );
   };
 
   const handleDeleteCard = async (cardId: string) => {
@@ -56,7 +64,7 @@ export default function UserPokedex() {
         "Êtes-vous sûr de vouloir supprimer cette carte de votre pokédex ?"
       )
     ) {
-      await removeCardFromPokedex(cardId);
+      removeCardMutation.mutate(cardId);
     }
   };
 
@@ -98,6 +106,19 @@ export default function UserPokedex() {
         <span className="ml-4 text-sm text-muted-foreground">
           Chargement de votre pokédex...
         </span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="text-red-500 mb-2">❌ Erreur de chargement</div>
+          <div className="text-sm text-muted-foreground">
+            {error.message || "Impossible de charger votre pokédex"}
+          </div>
+        </div>
       </div>
     );
   }

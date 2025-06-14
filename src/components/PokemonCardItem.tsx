@@ -3,7 +3,10 @@ import { formatImageUrl, formatSymbolUrl } from "../lib/imageUtils";
 import { PokemonCard } from "@/types/pokemon";
 import { Button } from "@/components/ui/button";
 import { Plus, Check } from "lucide-react";
-import { usePokedex } from "@/contexts/PokedexContext";
+import {
+  useAddCardToPokedex,
+  usePokedexStats,
+} from "@/hooks/usePokedexQueries";
 import { useAuth } from "@/hooks/useAuth";
 
 interface PokemonCardItemProps {
@@ -18,7 +21,8 @@ const PokemonCardItem: React.FC<PokemonCardItemProps> = ({ card, onClick }) => {
   const maxRetries = 2;
 
   const { user } = useAuth();
-  const { addCardToPokedex, isCardInPokedex } = usePokedex();
+  const { isCardInPokedex } = usePokedexStats();
+  const addCardMutation = useAddCardToPokedex();
   const isInPokedex = isCardInPokedex(card.id);
 
   const handleImageError = (
@@ -55,8 +59,14 @@ const PokemonCardItem: React.FC<PokemonCardItemProps> = ({ card, onClick }) => {
     }
 
     setIsAdding(true);
-    await addCardToPokedex(card);
-    setIsAdding(false);
+    addCardMutation.mutate(
+      { card },
+      {
+        onSettled: () => {
+          setIsAdding(false);
+        },
+      }
+    );
   };
 
   if (imageError) {
