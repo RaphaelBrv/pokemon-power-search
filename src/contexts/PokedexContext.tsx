@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase, UserPokemonCard } from "@/lib/supabase";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { PokemonCard } from "@/types/pokemon";
 import { useToast } from "@/hooks/use-toast";
 

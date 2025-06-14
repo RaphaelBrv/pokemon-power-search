@@ -4,7 +4,7 @@ import { PokemonCard } from "@/types/pokemon";
 import { Button } from "@/components/ui/button";
 import { Plus, Check } from "lucide-react";
 import { usePokedex } from "@/contexts/PokedexContext";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 interface PokemonCardItemProps {
   card: PokemonCard;

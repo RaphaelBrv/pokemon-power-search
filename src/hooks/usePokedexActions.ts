@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { usePokedex } from '@/contexts/PokedexContext'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/hooks/useAuth'
 import { PokemonCard } from '@/types/pokemon'
 import { useToast } from '@/hooks/use-toast'
 

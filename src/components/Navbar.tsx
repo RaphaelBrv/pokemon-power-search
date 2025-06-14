@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { LogIn, LogOut, User, Settings } from "lucide-react";
 import AuthModal from "./AuthModal";
 import UserPokedex from "./UserPokedex";
