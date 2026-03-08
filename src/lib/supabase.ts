@@ -35,4 +35,20 @@ export type UserPokemonCard = {
     quantity: number
     added_at: string
     notes?: string
+}
+
+export type PokemonCardCache = {
+    id: string
+    name: string
+    image_url?: string
+    types?: string[]
+    hp?: string
+    rarity?: string
+    set_id?: string
+    set_name?: string
+    local_id?: string
+    market_price?: number
+    full_data: any
+    last_updated: string
 } 
+ 

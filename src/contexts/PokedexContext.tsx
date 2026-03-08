@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { supabase, UserPokemonCard } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { PokemonCard } from "@/types/pokemon";
