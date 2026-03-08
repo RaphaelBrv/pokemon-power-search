@@ -175,7 +175,6 @@ const renderCursorContent = (id: CursorStyleId): React.ReactNode => {
 // Composant interne qui utilise le contexte
 const PageContent = () => {
   const { selectedCursorId } = useCursor();
-  const cursorContent = renderCursorContent(selectedCursorId);
   const { toast } = useToast();
 
   const {
@@ -198,6 +197,8 @@ const PageContent = () => {
     pricesLoaded,
     loadMarketPrices,
   } = usePokemonSearch();
+
+  const cursorContent = React.useMemo(() => renderCursorContent(selectedCursorId), [selectedCursorId]);
 
   const { addFavorite, removeFavorite, isFavorite } = useFavorites();
   const { addCardToDeck, decks } = useDecks();
