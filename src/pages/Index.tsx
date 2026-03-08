@@ -25,7 +25,6 @@ import { Button } from "@/components/ui/button";
 import { Coins, Filter } from "lucide-react";
 
 import {
-  CursorProvider,
   useCursor,
   CursorStyleId,
 } from "@/contexts/CursorContext";
@@ -228,8 +227,17 @@ const PageContent = () => {
   const pokemonWhite = "#FFFFFF";
 
   return (
-    <div className="min-h-screen bg-white flex flex-col relative">
-      <Navbar className={`bg-[${pokemonRed}] text-[${pokemonWhite}] shadow-md`}>
+    <div className="min-h-screen bg-white flex flex-col relative overflow-hidden">
+      {/* Background Decor */}
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.03]" 
+           style={{ 
+             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5c13.807 0 25 11.193 25 25S18.807 55 5 55 5 43.807 5 30 16.193 5 30 5zm0 5C18.954 10 10 18.954 10 30s8.954 20 20 20 20-8.954 20-20S41.046 10 30 10zm0 16c2.209 0 4 1.791 4 4s-1.791 4-4 4-4-1.791-4-4 1.791-4 4-4z' fill='%23000000' fill-rule='nonzero'/%3E%3C/svg%3E")`,
+             backgroundSize: '120px 120px'
+           }} 
+      />
+      <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-b from-blue-50/50 via-white to-red-50/30" />
+
+      <Navbar className={`bg-[${pokemonRed}] text-[${pokemonWhite}] shadow-md z-10`}>
         <div className="flex items-center space-x-2">
           <SearchHistory onSearchAgain={handleSearch} />
           <FavoritesList onCardClick={handleCardClick} />
@@ -243,7 +251,7 @@ const PageContent = () => {
         </div>
       </Navbar>
 
-      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl">
+      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl relative z-10">
         {cursorContent && <Pointer>{cursorContent}</Pointer>}
 
         <div className="text-center mb-8 sm:mb-12">
@@ -386,7 +394,7 @@ const PageContent = () => {
         </div>
       </main>
 
-      <Footer className={`bg-[${pokemonBlack}] text-[${pokemonWhite}] mt-12`} />
+      <Footer className={`bg-[${pokemonBlack}] text-[${pokemonWhite}] mt-12 z-10`} />
 
       {selectedCard && (
         <CardDetailModal
@@ -401,9 +409,7 @@ const PageContent = () => {
 // Composant principal de la page
 const Index = () => {
   return (
-    <CursorProvider>
-      <PageContent />
-    </CursorProvider>
+    <PageContent />
   );
 };
 

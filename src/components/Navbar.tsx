@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Link } from "react-router-dom";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -85,36 +86,37 @@ const Navbar: React.FC<React.HTMLAttributes<HTMLElement>> = ({
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         {/* Logo Section */}
         <div className="flex items-center gap-4">
-          <motion.div 
-            className="flex items-center gap-2 cursor-pointer group"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => window.location.href = "/"}
-          >
-            <div className="relative">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-              >
-                <PokeBallIcon className="w-8 h-8 sm:w-10 sm:h-10 shadow-lg rounded-full" />
-              </motion.div>
-              <motion.div 
-                className="absolute -top-1 -right-1"
-                animate={{ opacity: [0, 1, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <Sparkles className="w-4 h-4 text-[#FFDE00]" />
-              </motion.div>
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="text-xl sm:text-2xl font-black text-[#FFDE00] drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] tracking-tighter italic">
-                POKÉ<span className="text-white">POWER</span>
-              </span>
-              <span className="text-[10px] font-bold text-white/70 tracking-[0.2em] uppercase ml-1">
-                Search Engine
-              </span>
-            </div>
-          </motion.div>
+          <Link to="/">
+            <motion.div 
+              className="flex items-center gap-2 cursor-pointer group"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="relative">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                >
+                  <PokeBallIcon className="w-8 h-8 sm:w-10 sm:h-10 shadow-lg rounded-full" />
+                </motion.div>
+                <motion.div 
+                  className="absolute -top-1 -right-1"
+                  animate={{ opacity: [0, 1, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <Sparkles className="w-4 h-4 text-[#FFDE00]" />
+                </motion.div>
+              </div>
+              <div className="flex flex-col leading-none">
+                <span className="text-xl sm:text-2xl font-black text-[#FFDE00] drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] tracking-tighter italic">
+                  POKÉ<span className="text-white">POWER</span>
+                </span>
+                <span className="text-[10px] font-bold text-white/70 tracking-[0.2em] uppercase ml-1">
+                  Search Engine
+                </span>
+              </div>
+            </motion.div>
+          </Link>
           <PerformanceIndicator isVisible={!!user} />
         </div>
 
@@ -245,13 +247,17 @@ const Navbar: React.FC<React.HTMLAttributes<HTMLElement>> = ({
                       </div>
                     </div>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="rounded-md font-bold py-3 cursor-pointer group">
-                      <User className="mr-3 h-5 w-5 text-[#3B4CCA] group-hover:scale-110 transition-transform" />
-                      <span>Mon Profil</span>
+                    <DropdownMenuItem asChild className="rounded-md font-bold py-3 cursor-pointer group">
+                      <Link to="/profile" className="flex items-center w-full">
+                        <User className="mr-3 h-5 w-5 text-[#3B4CCA] group-hover:scale-110 transition-transform" />
+                        <span>Mon Profil</span>
+                      </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="rounded-md font-bold py-3 cursor-pointer group">
-                      <Settings className="mr-3 h-5 w-5 text-[#3B4CCA] group-hover:rotate-90 transition-transform duration-500" />
-                      <span>Paramètres</span>
+                    <DropdownMenuItem asChild className="rounded-md font-bold py-3 cursor-pointer group">
+                      <Link to="/settings" className="flex items-center w-full">
+                        <Settings className="mr-3 h-5 w-5 text-[#3B4CCA] group-hover:rotate-90 transition-transform duration-500" />
+                        <span>Paramètres</span>
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
@@ -350,11 +356,23 @@ const Navbar: React.FC<React.HTMLAttributes<HTMLElement>> = ({
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
-                          <Button variant="outline" className="h-14 font-black border-2 rounded-xl text-[#3B4CCA]">
-                            <User className="mr-2 h-5 w-5" /> Profil
+                          <Button 
+                            variant="outline" 
+                            className="h-14 font-black border-2 rounded-xl text-[#3B4CCA]"
+                            asChild
+                          >
+                            <Link to="/profile" onClick={() => setMobileMenuOpen(false)}>
+                              <User className="mr-2 h-5 w-5" /> Profil
+                            </Link>
                           </Button>
-                          <Button variant="outline" className="h-14 font-black border-2 rounded-xl text-[#3B4CCA]">
-                            <Settings className="mr-2 h-5 w-5" /> Paramètres
+                          <Button 
+                            variant="outline" 
+                            className="h-14 font-black border-2 rounded-xl text-[#3B4CCA]"
+                            asChild
+                          >
+                            <Link to="/settings" onClick={() => setMobileMenuOpen(false)}>
+                              <Settings className="mr-2 h-5 w-5" /> Paramètres
+                            </Link>
                           </Button>
                         </div>
                         
