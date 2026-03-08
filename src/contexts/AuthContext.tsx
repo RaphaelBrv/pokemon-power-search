@@ -37,6 +37,70 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchProfile = useCallback(async (userId: string, retryCount = 0) => {
+    try {
+      console.log("🔍 Récupération du profil pour:", userId);
+
+      // Vérifier d'abord le cache local
+      const cachedProfile = authCache.getProfile(userId);
+      if (cachedProfile) {
+        setProfile(cachedProfile);
+        setLoading(false);
+        return;
+      }
+
+      // Timeout pour éviter l'attente trop longue
+      const profilePromise = supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Profile fetch timeout")), 2000)
+      );
+
+      const { data, error } = (await Promise.race([
+        profilePromise,
+        timeoutPromise,
+      ])) as any;
+
+      if (error) {
+        console.error("Erreur lors de la récupération du profil:", error);
+
+        // Retry une fois en cas d'erreur réseau
+        if (
+          retryCount === 0 &&
+          (error.message?.includes("timeout") ||
+            error.message?.includes("network"))
+        ) {
+          console.log("🔄 Retry de récupération du profil...");
+          return fetchProfile(userId, 1);
+        }
+
+        // En cas d'erreur persistante, continuer sans profil
+        setProfile(null);
+      } else {
+        console.log("✅ Profil récupéré:", data?.name || data?.email);
+        setProfile(data);
+        // Mettre en cache le profil récupéré
+        authCache.setProfile(userId, data);
+      }
+    } catch (error) {
+      console.error("Erreur générale:", error);
+
+      // Retry une fois en cas de timeout
+      if (retryCount === 0) {
+        console.log("🔄 Retry après timeout...");
+        return fetchProfile(userId, 1);
+      }
+
+      setProfile(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -107,70 +171,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       subscription.unsubscribe();
     };
   }, [fetchProfile, profile]);
-
-  const fetchProfile = useCallback(async (userId: string, retryCount = 0) => {
-    try {
-      console.log("🔍 Récupération du profil pour:", userId);
-
-      // Vérifier d'abord le cache local
-      const cachedProfile = authCache.getProfile(userId);
-      if (cachedProfile) {
-        setProfile(cachedProfile);
-        setLoading(false);
-        return;
-      }
-
-      // Timeout pour éviter l'attente trop longue
-      const profilePromise = supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Profile fetch timeout")), 2000)
-      );
-
-      const { data, error } = (await Promise.race([
-        profilePromise,
-        timeoutPromise,
-      ])) as any;
-
-      if (error) {
-        console.error("Erreur lors de la récupération du profil:", error);
-
-        // Retry une fois en cas d'erreur réseau
-        if (
-          retryCount === 0 &&
-          (error.message?.includes("timeout") ||
-            error.message?.includes("network"))
-        ) {
-          console.log("🔄 Retry de récupération du profil...");
-          return fetchProfile(userId, 1);
-        }
-
-        // En cas d'erreur persistante, continuer sans profil
-        setProfile(null);
-      } else {
-        console.log("✅ Profil récupéré:", data?.name || data?.email);
-        setProfile(data);
-        // Mettre en cache le profil récupéré
-        authCache.setProfile(userId, data);
-      }
-    } catch (error) {
-      console.error("Erreur générale:", error);
-
-      // Retry une fois en cas de timeout
-      if (retryCount === 0) {
-        console.log("🔄 Retry après timeout...");
-        return fetchProfile(userId, 1);
-      }
-
-      setProfile(null);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   const signUp = async (email: string, password: string, name?: string) => {
     const { error } = await supabase.auth.signUp({
