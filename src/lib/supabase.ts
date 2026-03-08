@@ -35,6 +35,7 @@ export type UserPokemonCard = {
     quantity: number
     added_at: string
     notes?: string
+    dex_id?: number[]
 }
 
 export type PokemonCardCache = {

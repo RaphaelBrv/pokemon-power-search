@@ -97,6 +97,7 @@ export const useAddCardToPokedex = () => {
                     card_type: card.types?.[0],
                     hp: card.hp ? parseInt(card.hp) : undefined,
                     market_price: card.marketPrices?.market,
+                    dex_id: card.dexId, // On sauve maintenant le dexId !
                     quantity,
                     notes,
                 };

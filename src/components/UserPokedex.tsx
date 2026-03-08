@@ -69,7 +69,8 @@ export default function UserPokedex() {
   };
 
   const handleCardClick = (userCard: UserPokemonCard) => {
-    // Convertir UserPokemonCard vers PokemonCard pour le modal
+    // Tenter de récupérer les infos complètes de la carte si possible (depuis le cache global ou local)
+    // Ici on prépare l'objet pour le modal
     const pokemonCard: PokemonCard = {
       id: userCard.card_id,
       localId: userCard.card_id.split("-")[1] || "1",
@@ -78,9 +79,11 @@ export default function UserPokedex() {
       types: userCard.card_type ? [userCard.card_type] : undefined,
       hp: userCard.hp?.toString(),
       rarity: userCard.card_rarity,
+      // On utilise l'ID stocké dans la DB s'il est là
+      dexId: userCard.dex_id || undefined, 
       set: userCard.card_set
         ? {
-            id: "unknown",
+    ...
             name: userCard.card_set,
             logo: "",
             symbol: "",
