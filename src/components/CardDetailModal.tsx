@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { formatImageUrl } from "../lib/imageUtils";
 import { PokemonCard } from "@/types/pokemon";
 import PokemonExtraInfo from "./PokemonExtraInfo";
+import HoloCard from "./HoloCard";
 
 interface CardDetailModalProps {
   selectedCard: PokemonCard | null;
@@ -18,41 +19,16 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
 
   return (
     <Dialog open={!!selectedCard} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[95%] md:max-w-[90%] lg:max-w-[800px] p-0 overflow-hidden bg-white rounded-lg max-h-[90vh]">
+      <DialogContent className="sm:max-w-[95%] md:max-w-[90%] lg:max-w-[800px] p-0 bg-white rounded-lg max-h-[90vh]">
         <div className="flex flex-col md:flex-row h-full">
-          {/* Partie gauche - Image */}
-          <div className="md:w-1/2 p-3 md:p-6 flex items-center justify-center bg-gray-50 max-h-[40vh] md:max-h-none">
-            <img
-              src={formatImageUrl(selectedCard.image, "high", "webp")}
-              alt={selectedCard.name}
-              className="max-h-[38vh] md:max-h-[75vh] object-contain w-auto"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                if (
-                  !target.src.includes("placeholder") &&
-                  !target.getAttribute("data-retry")
-                ) {
-                  target.setAttribute("data-retry", "true");
-                  // Essayer le format PNG si le WebP ne fonctionne pas
-                  target.src = formatImageUrl(
-                    selectedCard.image,
-                    "high",
-                    "png"
-                  );
-                } else if (
-                  target.getAttribute("data-retry") === "true" &&
-                  !target.getAttribute("data-retry-2")
-                ) {
-                  // Deuxième tentative avec une autre qualité
-                  target.setAttribute("data-retry-2", "true");
-                  target.src = formatImageUrl(selectedCard.image, "low", "png");
-                } else {
-                  // Si toutes les tentatives échouent, afficher un placeholder
-                  target.src =
-                    "https://via.placeholder.com/600x825?text=Image+non+disponible";
-                }
-              }}
-            />
+          {/* Partie gauche - Image avec effet Holographique */}
+          <div className="md:w-1/2 p-4 md:p-8 flex items-center justify-center bg-gray-50/50 min-h-[450px] md:min-h-[600px]">
+            <div className="relative z-20">
+              <HoloCard 
+                image={formatImageUrl(selectedCard.image, "high", "webp")} 
+                name={selectedCard.name} 
+              />
+            </div>
           </div>
 
           {/* Partie droite - Informations */}
