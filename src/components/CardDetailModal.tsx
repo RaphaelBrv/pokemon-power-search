@@ -1,12 +1,13 @@
 import * as React from "react";
 import { X, Shield, Zap, Info, Layers, User, Hash, Calendar } from "lucide-react";
-import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogClose, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { formatImageUrl } from "../lib/imageUtils";
 import { PokemonCard } from "@/types/pokemon";
 import PokemonExtraInfo from "./PokemonExtraInfo";
 import HoloCard from "./HoloCard";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 
 interface CardDetailModalProps {
   selectedCard: PokemonCard | null;
@@ -35,9 +36,17 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
 
   const mainType = selectedCard.types?.[0]?.toLowerCase() || "colorless";
 
+  // Nettoyage du nom pour PokeAPI (ex: "Grimalin de Rosemary" -> "Grimalin")
+  const cleanName = selectedCard.name.split(' ')[0].replace(/[^a-zA-Z]/g, '');
+
   return (
     <Dialog open={!!selectedCard} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[95%] md:max-w-[90%] lg:max-w-[1000px] p-0 bg-white rounded-2xl overflow-hidden border-none shadow-2xl max-h-[92vh]">
+        <VisuallyHidden.Root>
+          <DialogTitle>{selectedCard.name}</DialogTitle>
+          <DialogDescription>Détails complets de la carte Pokémon {selectedCard.name}</DialogDescription>
+        </VisuallyHidden.Root>
+        
         <div className="flex flex-col md:flex-row h-full">
           {/* Partie gauche - Image avec effet Holographique */}
           <div className={cn(
@@ -161,7 +170,7 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
               <div className="mt-10 pt-8 border-t border-slate-100">
                 <PokemonExtraInfo 
                   dexId={selectedCard.dexId} 
-                  name={selectedCard.name} 
+                  name={cleanName} 
                 />
               </div>
             </div>

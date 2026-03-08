@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Wifi, WifiOff, Zap } from "lucide-react";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 interface PerformanceIndicatorProps {
   isVisible?: boolean;
@@ -23,12 +24,14 @@ export default function PerformanceIndicator({
       try {
         const start = Date.now();
 
-        // Test simple de connectivité
+        // Test simple de connectivité avec clé API pour éviter 401
         await fetch(
           `${supabaseUrl}/rest/v1/`,
           {
             method: "HEAD",
-            mode: "no-cors",
+            headers: {
+              apikey: supabaseKey,
+            },
           }
         );
 
