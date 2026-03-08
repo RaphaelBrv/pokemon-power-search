@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useDecks } from "@/contexts/DeckContext";
-import { PokemonCard, PokemonDeck } from "@/types/pokemon";
+import { PokemonDeck } from "@/types/pokemon";
 import { Album, Folders, Plus, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -52,7 +52,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-interface DeckManagerProps {}
+type DeckManagerProps = Record<string, never>;
 
 const DeckManager: React.FC<DeckManagerProps> = () => {
   const { decks, createDeck, updateDeck, deleteDeck, getDeckById } = useDecks();

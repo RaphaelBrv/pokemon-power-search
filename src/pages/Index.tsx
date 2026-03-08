@@ -16,8 +16,6 @@ import DeckManager from "@/components/DeckManager";
 import CardComparison from "@/components/CardComparison";
 
 import { usePokemonSearch } from "@/hooks/usePokemonSearch";
-import { useFavorites } from "@/contexts/FavoritesContext";
-import { useDecks } from "@/contexts/DeckContext";
 import { useCardComparison } from "@/hooks/useCardComparison";
 
 import { PokemonCard } from "@/types/pokemon";
@@ -25,7 +23,6 @@ import { Marquee } from "@/components/ui/marquee";
 import PokemonCardItem from "@/components/PokemonCardItem";
 import { Button } from "@/components/ui/button";
 import { Coins, Filter } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 
 import {
   CursorProvider,
@@ -175,7 +172,6 @@ const renderCursorContent = (id: CursorStyleId): React.ReactNode => {
 // Composant interne qui utilise le contexte
 const PageContent = () => {
   const { selectedCursorId } = useCursor();
-  const { toast } = useToast();
 
   const {
     pokemonCards,

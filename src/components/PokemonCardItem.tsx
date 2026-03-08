@@ -1,5 +1,5 @@
 import React from "react";
-import { formatImageUrl, formatSymbolUrl } from "../lib/imageUtils";
+import { formatImageUrl } from "../lib/imageUtils";
 import { PokemonCard } from "@/types/pokemon";
 import { Button } from "@/components/ui/button";
 import { Plus, Check, Star } from "lucide-react";

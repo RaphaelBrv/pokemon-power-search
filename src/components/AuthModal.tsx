@@ -67,7 +67,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
         onOpenChange(false);
         setFormData({ email: "", password: "", name: "", confirmPassword: "" });
       }
-    } catch (_error) {
+    } catch {
       toast({
         title: "Erreur",
         description: "Une erreur s'est produite lors de la connexion",
@@ -122,7 +122,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
         onOpenChange(false);
         setFormData({ email: "", password: "", name: "", confirmPassword: "" });
       }
-    } catch (_error) {
+    } catch {
       toast({
         title: "Erreur",
         description: "Une erreur s'est produite lors de l'inscription",

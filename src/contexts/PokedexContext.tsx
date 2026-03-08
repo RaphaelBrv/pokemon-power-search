@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase, UserPokemonCard } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
@@ -42,18 +43,7 @@ export const PokedexProvider: React.FC<{ children: React.ReactNode }> = ({
   const { user } = useAuth();
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (user) {
-      console.log("User connecté, récupération des cartes...");
-      fetchUserCards();
-    } else {
-      console.log("Aucun utilisateur connecté, réinitialisation des cartes");
-      setUserCards([]);
-      setLoading(false);
-    }
-  }, [user]);
-
-  const fetchUserCards = async () => {
+  const fetchUserCards = useCallback(async () => {
     if (!user) {
       setLoading(false);
       return;
@@ -95,7 +85,18 @@ export const PokedexProvider: React.FC<{ children: React.ReactNode }> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, toast]);
+
+  useEffect(() => {
+    if (user) {
+      console.log("User connecté, récupération des cartes...");
+      fetchUserCards();
+    } else {
+      console.log("Aucun utilisateur connecté, réinitialisation des cartes");
+      setUserCards([]);
+      setLoading(false);
+    }
+  }, [user, fetchUserCards]);
 
   const addCardToPokedex = async (
     card: PokemonCard,

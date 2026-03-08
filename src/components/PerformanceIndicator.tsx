@@ -40,7 +40,7 @@ export default function PerformanceIndicator({
         } else {
           setConnectionSpeed("slow");
         }
-      } catch (_error) {
+      } catch {
         setConnectionSpeed("offline");
         setLastPing(0);
       }

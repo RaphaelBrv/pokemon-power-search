@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useCallback, useEffect, useState } from "react";
 import { User, Session, AuthError } from "@supabase/supabase-js";
 import { supabase, Profile } from "@/lib/supabase";
@@ -62,7 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         } else {
           setLoading(false);
         }
-      } catch (_error) {
+      } catch {
         console.warn(
           "Timeout lors de la récupération de session, continuons sans session"
         );
@@ -247,7 +248,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         authCache.clear();
 
         return { error };
-      } catch (_timeoutError) {
+      } catch {
         console.warn(
           "Timeout lors de la déconnexion, forçage de la déconnexion locale"
         );

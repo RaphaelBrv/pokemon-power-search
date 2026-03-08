@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { PokemonCard, PokemonFilters, SortSettings } from '@/types/pokemon';
 
 interface UseFiltersAndSortProps {
