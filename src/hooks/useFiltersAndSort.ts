@@ -19,6 +19,8 @@ export const useFiltersAndSort = ({ cards }: UseFiltersAndSortProps) => {
         direction: 'asc',
     });
 
+    const [prevAvailableMaxHp, setPrevAvailableMaxHp] = useState(300);
+
     // Extraire les options disponibles des cartes
     const availableOptions = useMemo(() => {
         const types = new Set<string>();
@@ -59,13 +61,14 @@ export const useFiltersAndSort = ({ cards }: UseFiltersAndSortProps) => {
         };
     }, [cards]);
 
-    // Réinitialiser les filtres si les valeurs maximales changent
-    useEffect(() => {
+    // Synchroniser maxHp si availableOptions change (pattern recommandé par React au lieu de useEffect)
+    if (availableOptions.maxHp !== prevAvailableMaxHp) {
+        setPrevAvailableMaxHp(availableOptions.maxHp);
         setFilters(prev => ({
             ...prev,
             maxHp: availableOptions.maxHp
         }));
-    }, [availableOptions.maxHp]);
+    }
 
     const updateTypeFilter = (type: string, isSelected: boolean) => {
         setFilters(prev => {

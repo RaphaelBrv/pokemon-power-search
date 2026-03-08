@@ -6,7 +6,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Pointer } from "@/components/ui/pointer";
 import { motion } from "framer-motion";
 import { useCursor, CursorStyleId } from "@/contexts/CursorContext";
 import { Button } from "@/components/ui/button";

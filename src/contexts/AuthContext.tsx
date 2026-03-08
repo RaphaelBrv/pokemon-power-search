@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useEffect, useState } from "react";
 import { User, Session, AuthError } from "@supabase/supabase-js";
 import { supabase, Profile } from "@/lib/supabase";
 import { queryClient } from "@/lib/queryClient";
@@ -62,7 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         } else {
           setLoading(false);
         }
-      } catch (error) {
+      } catch (_error) {
         console.warn(
           "Timeout lors de la récupération de session, continuons sans session"
         );
@@ -105,9 +105,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [fetchProfile, profile]);
 
-  const fetchProfile = async (userId: string, retryCount = 0) => {
+  const fetchProfile = useCallback(async (userId: string, retryCount = 0) => {
     try {
       console.log("🔍 Récupération du profil pour:", userId);
 
@@ -169,7 +169,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const signUp = async (email: string, password: string, name?: string) => {
     const { error } = await supabase.auth.signUp({
@@ -247,7 +247,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         authCache.clear();
 
         return { error };
-      } catch (timeoutError) {
+      } catch (_timeoutError) {
         console.warn(
           "Timeout lors de la déconnexion, forçage de la déconnexion locale"
         );

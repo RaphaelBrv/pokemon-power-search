@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useDecks } from "@/contexts/DeckContext";
 import { PokemonCard, PokemonDeck } from "@/types/pokemon";
-import { Album, BookPlus, Folders, Plus, Share2, Trash2 } from "lucide-react";
+import { Album, Folders, Plus, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -52,11 +52,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-interface DeckManagerProps {
-  onViewCard: (card: PokemonCard) => void;
-}
+interface DeckManagerProps {}
 
-const DeckManager: React.FC<DeckManagerProps> = ({ onViewCard }) => {
+const DeckManager: React.FC<DeckManagerProps> = () => {
   const { decks, createDeck, updateDeck, deleteDeck, getDeckById } = useDecks();
   const [newDeckName, setNewDeckName] = useState("");
   const [newDeckDescription, setNewDeckDescription] = useState("");

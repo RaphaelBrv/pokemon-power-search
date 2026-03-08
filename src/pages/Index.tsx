@@ -200,12 +200,8 @@ const PageContent = () => {
 
   const cursorContent = React.useMemo(() => renderCursorContent(selectedCursorId), [selectedCursorId]);
 
-  const { addFavorite, removeFavorite, isFavorite } = useFavorites();
-  const { addCardToDeck, decks } = useDecks();
   const {
     comparisonCards,
-    isInComparison,
-    addToComparison,
     removeFromComparison,
     clearComparison,
     maxComparisonCards,
@@ -230,48 +226,6 @@ const PageContent = () => {
     searchPokemon(query);
   };
 
-  const handleToggleFavorite = (card: PokemonCard, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (isFavorite(card.id)) {
-      removeFavorite(card.id);
-      toast({
-        title: "Retiré des favoris",
-        description: `${card.name} a été retiré.`,
-      });
-    } else {
-      addFavorite(card);
-      toast({
-        title: "Ajouté aux favoris",
-        description: `${card.name} a été ajouté.`,
-      });
-    }
-  };
-
-  const handleToggleComparison = (card: PokemonCard, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (isInComparison(card.id)) {
-      removeFromComparison(card.id);
-      toast({
-        title: "Retiré de la comparaison",
-        description: `${card.name} a été retiré.`,
-      });
-    } else {
-      if (comparisonCards.length < maxComparisonCards) {
-        addToComparison(card);
-        toast({
-          title: "Ajouté à la comparaison",
-          description: `${card.name} a été ajouté.`,
-        });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Limite atteinte",
-          description: `Vous ne pouvez comparer que ${maxComparisonCards} cartes.`,
-        });
-      }
-    }
-  };
-
   const pokemonRed = "#FF0000";
   const pokemonYellow = "#FFDE00";
   const pokemonBlack = "#000000";
@@ -283,7 +237,7 @@ const PageContent = () => {
         <div className="flex items-center space-x-2">
           <SearchHistory onSearchAgain={handleSearch} />
           <FavoritesList onCardClick={handleCardClick} />
-          <DeckManager onViewCard={handleCardClick} />
+          <DeckManager />
           <CardComparison
             cards={comparisonCards}
             removeCard={removeFromComparison}

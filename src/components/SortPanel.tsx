@@ -7,8 +7,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, ArrowDown, ArrowUp } from "lucide-react";
-import { SortOption, SortDirection, SortSettings } from "@/types/pokemon";
+import { ArrowDown, ArrowUp } from "lucide-react";
+import { SortOption, SortSettings } from "@/types/pokemon";
 
 interface SortPanelProps {
   sortSettings: SortSettings;

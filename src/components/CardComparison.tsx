@@ -1,8 +1,6 @@
 import React from "react";
 import { PokemonCard } from "@/types/pokemon";
 import {
-  ArrowsMaximize,
-  HelpCircle,
   SplitSquareVertical,
   X,
 } from "lucide-react";
@@ -41,7 +39,6 @@ const CardComparison: React.FC<CardComparisonProps> = ({
   clearComparison,
   maxCards,
 }) => {
-  const hasCards = cards.length > 0;
   const canCompare = cards.length >= 2;
 
   return (

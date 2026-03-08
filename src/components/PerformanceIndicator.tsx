@@ -22,7 +22,7 @@ export default function PerformanceIndicator({
         const start = Date.now();
 
         // Test simple de connectivité
-        const response = await fetch(
+        await fetch(
           "https://daauiaxvmlrvterpfkod.supabase.co/rest/v1/",
           {
             method: "HEAD",
@@ -40,7 +40,7 @@ export default function PerformanceIndicator({
         } else {
           setConnectionSpeed("slow");
         }
-      } catch (error) {
+      } catch (_error) {
         setConnectionSpeed("offline");
         setLastPing(0);
       }

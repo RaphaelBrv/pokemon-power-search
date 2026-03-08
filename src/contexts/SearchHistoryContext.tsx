@@ -26,25 +26,23 @@ export const useSearchHistory = () => {
 export const SearchHistoryProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
-
-  // Charger l'historique depuis le localStorage au montage
-  useEffect(() => {
+  const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>(() => {
     try {
       const storedHistory = localStorage.getItem("pokemonSearchHistory");
       if (storedHistory) {
         const parsedHistory = JSON.parse(storedHistory);
         // Convertir les timestamps en objets Date
-        const formattedHistory = parsedHistory.map((item: any) => ({
+        return parsedHistory.map((item: any) => ({
           ...item,
           timestamp: new Date(item.timestamp),
         }));
-        setSearchHistory(formattedHistory);
       }
+      return [];
     } catch (error) {
       console.error("Erreur lors du chargement de l'historique:", error);
+      return [];
     }
-  }, []);
+  });
 
   // Sauvegarder l'historique dans le localStorage à chaque changement
   useEffect(() => {

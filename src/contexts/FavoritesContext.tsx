@@ -25,19 +25,15 @@ export const useFavorites = () => {
 export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [favorites, setFavorites] = useState<PokemonCard[]>([]);
-
-  // Charger les favoris depuis le localStorage au montage
-  useEffect(() => {
+  const [favorites, setFavorites] = useState<PokemonCard[]>(() => {
     try {
       const storedFavorites = localStorage.getItem("pokemonFavorites");
-      if (storedFavorites) {
-        setFavorites(JSON.parse(storedFavorites));
-      }
+      return storedFavorites ? JSON.parse(storedFavorites) : [];
     } catch (error) {
       console.error("Erreur lors du chargement des favoris:", error);
+      return [];
     }
-  }, []);
+  });
 
   // Sauvegarder les favoris dans le localStorage à chaque changement
   useEffect(() => {

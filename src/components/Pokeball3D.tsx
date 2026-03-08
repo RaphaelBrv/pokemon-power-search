@@ -277,7 +277,7 @@ const Pokeball3D: React.FC<Pokeball3DProps> = ({
       }
     };
 
-    const onClick = (event: MouseEvent) => {
+    const onClick = () => {
       raycaster.setFromCamera(mouse, camera);
       const intersects = raycaster.intersectObjects(pokeballGroup.children, true);
       if (intersects.length > 0) {

@@ -32,26 +32,24 @@ export const useDecks = () => {
 export const DeckProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [decks, setDecks] = useState<PokemonDeck[]>([]);
-
-  // Charger les decks depuis le localStorage au montage
-  useEffect(() => {
+  const [decks, setDecks] = useState<PokemonDeck[]>(() => {
     try {
       const storedDecks = localStorage.getItem("pokemonDecks");
       if (storedDecks) {
         const parsedDecks = JSON.parse(storedDecks);
         // Convertir les timestamps en objets Date
-        const formattedDecks = parsedDecks.map((deck: any) => ({
+        return parsedDecks.map((deck: any) => ({
           ...deck,
           createdAt: new Date(deck.createdAt),
           updatedAt: new Date(deck.updatedAt),
         }));
-        setDecks(formattedDecks);
       }
+      return [];
     } catch (error) {
       console.error("Erreur lors du chargement des decks:", error);
+      return [];
     }
-  }, []);
+  });
 
   // Sauvegarder les decks dans le localStorage à chaque changement
   useEffect(() => {

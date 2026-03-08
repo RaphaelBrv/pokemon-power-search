@@ -127,8 +127,8 @@ export const usePokemonSearch = () => {
             // Fetch en parallèle avec limite implicite par le navigateur
             const cards = await Promise.all(cardIds.map(id => fetchCardDetails(id)));
             setPokemonCards(cards.filter(Boolean) as PokemonCard[]);
-        } catch (error) {
-            console.error("Erreur cartes par défaut:", error);
+        } catch (_error) {
+            console.error("Erreur cartes par défaut:", _error);
             const fallbackDetails = await Promise.all(FALLBACK_CARD_IDS.map(id => fetchCardDetails(id)));
             setPokemonCards(fallbackDetails.filter(Boolean) as PokemonCard[]);
         } finally {
@@ -165,7 +165,7 @@ export const usePokemonSearch = () => {
             if (validCards.length === 0) {
                 toast({ variant: "destructive", title: "Aucune carte trouvée" });
             }
-        } catch (error) {
+        } catch (_error) {
             toast({ variant: "destructive", title: "Erreur de recherche" });
         } finally {
             setIsLoading(false);

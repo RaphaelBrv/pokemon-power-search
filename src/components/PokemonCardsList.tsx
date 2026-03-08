@@ -18,8 +18,15 @@ const PokemonCardsList: React.FC<PokemonCardsListProps> = ({
   onLoadMore,
 }) => {
   const parentRef = useRef<HTMLDivElement>(null);
+  const [scrollMargin, setScrollMargin] = React.useState(0);
   const displayedCards = cards.slice(0, visibleCards);
   const hasMoreCards = visibleCards < cards.length;
+
+  React.useLayoutEffect(() => {
+    if (parentRef.current) {
+      setScrollMargin(parentRef.current.offsetTop);
+    }
+  }, []);
 
   // Calcul du nombre de colonnes basé sur les breakpoints Tailwind
   // sm: 2, lg: 3, xl: 4
@@ -52,7 +59,7 @@ const PokemonCardsList: React.FC<PokemonCardsListProps> = ({
     count: rows.length,
     estimateSize: () => 450, // Hauteur estimée d'une ligne de cartes
     overscan: 2,
-    scrollMargin: parentRef.current?.offsetTop ?? 0,
+    scrollMargin,
   });
 
   if (cards.length === 0) {
