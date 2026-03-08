@@ -1,5 +1,5 @@
 import * as React from "react";
-import { X, Shield, Zap, Info, Layers, User, Hash, Calendar } from "lucide-react";
+import { X, Shield, Zap, Layers, User, Hash } from "lucide-react";
 import { Dialog, DialogContent, DialogClose, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { formatImageUrl } from "../lib/imageUtils";
 import { PokemonCard } from "@/types/pokemon";

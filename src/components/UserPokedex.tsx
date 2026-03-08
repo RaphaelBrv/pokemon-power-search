@@ -83,7 +83,7 @@ export default function UserPokedex() {
       dexId: userCard.dex_id || undefined, 
       set: userCard.card_set
         ? {
-    ...
+            id: "unknown",
             name: userCard.card_set,
             logo: "",
             symbol: "",
