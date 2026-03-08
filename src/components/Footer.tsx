@@ -2,7 +2,7 @@ import React from "react";
 import { Separator } from "./ui/separator";
 import { cn } from "@/lib/utils";
 
-interface FooterProps extends React.HTMLAttributes<HTMLElement> {}
+export type FooterProps = React.HTMLAttributes<HTMLElement>;
 
 const Footer: React.FC<FooterProps> = ({ className, ...props }) => {
   return (

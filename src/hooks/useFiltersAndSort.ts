@@ -125,7 +125,7 @@ export const useFiltersAndSort = ({ cards }: UseFiltersAndSortProps) => {
     // Appliquer les filtres et le tri aux cartes
     const filteredAndSortedCards = useMemo(() => {
         // Étape 1: Filtrer les cartes
-        let result = cards.filter(card => {
+        const result = cards.filter(card => {
             // Filtrer par type
             if (filters.types.length > 0) {
                 if (!card.types || !card.types.some(type => filters.types.includes(type))) {
@@ -171,21 +171,24 @@ export const useFiltersAndSort = ({ cards }: UseFiltersAndSortProps) => {
                 case 'name':
                     return (a.name || '').localeCompare(b.name || '') * direction;
 
-                case 'rarity':
+                case 'rarity': {
                     if (!a.rarity && !b.rarity) return 0;
                     if (!a.rarity) return direction;
                     if (!b.rarity) return -direction;
                     return a.rarity.localeCompare(b.rarity) * direction;
+                }
 
-                case 'hp':
+                case 'hp': {
                     const aHp = a.hp ? parseInt(a.hp, 10) : 0;
                     const bHp = b.hp ? parseInt(b.hp, 10) : 0;
                     return (aHp - bHp) * direction;
+                }
 
-                case 'releaseDate':
+                case 'releaseDate': {
                     const aDate = a.set?.releaseDate || '';
                     const bDate = b.set?.releaseDate || '';
                     return aDate.localeCompare(bDate) * direction;
+                }
 
                 default:
                     return 0;

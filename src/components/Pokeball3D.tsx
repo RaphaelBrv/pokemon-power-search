@@ -1,323 +1,380 @@
-import * as React from "react";
-import { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
-// Définition des types pour plus de clarté
-type ThreeContext = {
-  scene: THREE.Scene | null;
-  camera: THREE.PerspectiveCamera | null;
-  renderer: THREE.WebGLRenderer | null;
-  controls: OrbitControls | null;
-  pokeballGroup: THREE.Group | null;
-  mountRef: React.RefObject<HTMLDivElement>;
-  requestRef: React.MutableRefObject<number | null>; // Pour l'ID de requestAnimationFrame
-};
+interface Pokeball3DProps {
+  className?: string;
+}
 
-// Le composant React fonctionnel
-const Pokeball3D: React.FC<{ className?: string }> = ({
-  className = "w-full h-80",
+const Pokeball3D: React.FC<Pokeball3DProps> = ({
+  className = "w-full h-[500px] bg-gray-900 rounded-xl shadow-2xl overflow-hidden cursor-grab active:cursor-grabbing",
 }) => {
-  // Référence au conteneur div où le canvas sera monté
   const mountRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlayingVideo, setIsPlayingVideo] = useState(false);
 
-  // Références pour stocker les objets Three.js et l'ID d'animation
-  // afin qu'ils persistent entre les rendus sans causer de re-rendu
-  const threeContext = useRef<ThreeContext>({
-    scene: null,
-    camera: null,
-    renderer: null,
-    controls: null,
-    pokeballGroup: null,
-    mountRef: mountRef, // Passer la ref ici pour l'utiliser dans les fonctions
-    requestRef: { current: null },
-  }).current; // .current pour accéder à l'objet mutable
-
-  // Effet exécuté une fois après le montage initial du composant
   useEffect(() => {
-    // --- Initialisation de Three.js ---
-    const initThree = () => {
-      if (!threeContext.mountRef.current) return; // Sécurité: vérifier que le point de montage existe
+    if (!mountRef.current || isPlayingVideo) return;
+    const container = mountRef.current;
 
-      const currentMount = threeContext.mountRef.current;
+    // --- 1. INITIALISATION DE LA SCÈNE ---
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x111827, 0.05);
 
-      // 1. Scène
-      threeContext.scene = new THREE.Scene();
-      threeContext.scene.background = null; // Fond transparent au lieu du gris
+    const camera = new THREE.PerspectiveCamera(
+      45,
+      container.clientWidth / container.clientHeight,
+      0.1,
+      100
+    );
+    camera.position.set(0, 1.5, 6);
 
-      // 2. Caméra
-      threeContext.camera = new THREE.PerspectiveCamera(
-        70,
-        currentMount.clientWidth / currentMount.clientHeight, // Utiliser les dimensions du conteneur
-        0.1,
-        1000
-      );
-      threeContext.camera.position.set(0, 1, 4);
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true,
+      powerPreference: "high-performance",
+    });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.1;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    
+    container.appendChild(renderer.domElement);
 
-      // 3. Renderer
-      threeContext.renderer = new THREE.WebGLRenderer({
-        antialias: true,
-        alpha: true, // Rendre le fond transparent
-      });
-      threeContext.renderer.setSize(
-        currentMount.clientWidth,
-        currentMount.clientHeight
-      );
-      currentMount.appendChild(threeContext.renderer.domElement); // Ajouter le canvas au div référencé
+    // --- 2. ÉCLAIRAGE ---
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+    hemiLight.position.set(0, 20, 0);
+    scene.add(hemiLight);
 
-      // 4. Lumières
-      threeContext.scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-      const dirLight = new THREE.DirectionalLight(0xffffff, 1.3);
-      dirLight.position.set(8, 15, 10);
-      threeContext.scene.add(dirLight);
-      const fillLight = new THREE.DirectionalLight(0xffffff, 0.6);
-      fillLight.position.set(-8, 5, -10);
-      threeContext.scene.add(fillLight);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 2);
+    dirLight.position.set(5, 5, 4);
+    dirLight.castShadow = true;
+    dirLight.shadow.camera.top = 4;
+    dirLight.shadow.camera.bottom = -4;
+    dirLight.shadow.camera.left = -4;
+    dirLight.shadow.camera.right = 4;
+    dirLight.shadow.camera.near = 0.1;
+    dirLight.shadow.camera.far = 20;
+    dirLight.shadow.mapSize.width = 1024;
+    dirLight.shadow.mapSize.height = 1024;
+    dirLight.shadow.bias = -0.001;
+    scene.add(dirLight);
 
-      // 5. Création de la Pokéball
-      threeContext.pokeballGroup = new THREE.Group();
+    const fillLight = new THREE.DirectionalLight(0x88bbff, 1.5);
+    fillLight.position.set(-5, 3, -4);
+    scene.add(fillLight);
 
-      const sphereRadius = 1.5;
-      const bandThickness = 0.22;
-      const buttonRadius = 0.4;
-      const buttonHeight = 0.1;
-      const buttonRingThickness = 0.05;
+    const rimLight = new THREE.SpotLight(0xffffff, 5);
+    rimLight.position.set(0, 5, -5);
+    rimLight.angle = Math.PI / 4;
+    rimLight.penumbra = 0.5;
+    scene.add(rimLight);
 
-      // Matériaux
-      const materialTop = new THREE.MeshStandardMaterial({
-        color: 0xcc0000,
-        roughness: 0.4,
-        metalness: 0.1,
-      });
-      const materialBottom = new THREE.MeshStandardMaterial({
-        color: 0xffffff,
-        roughness: 0.35,
-        metalness: 0.05,
-      });
-      const materialBand = new THREE.MeshStandardMaterial({
-        color: 0x080808,
-        roughness: 0.2,
-        metalness: 0.2,
-      });
-      const materialButtonOuter = new THREE.MeshStandardMaterial({
-        color: 0xf0f0f0,
-        roughness: 0.4,
-        metalness: 0.1,
-      });
-      const materialButtonInner = new THREE.MeshStandardMaterial({
-        color: 0xb0b0b0,
-        roughness: 0.5,
-        metalness: 0.1,
-      });
-      const materialButtonRing = materialBand;
+    // --- 3. CRÉATION DE LA POKÉBALL ---
+    const pokeballGroup = new THREE.Group();
+    const pokeballItems: THREE.Mesh[] = [];
 
-      // Géométrie de la Sphère
-      const sphereGeometry = new THREE.SphereGeometry(sphereRadius, 64, 32);
+    const radius = 1.5;
+    const gap = 0.04;
 
-      // Assignation des matériaux haut/bas via les groupes
-      sphereGeometry.clearGroups();
-      const indices = sphereGeometry.index!.array; // Utiliser ! car on sait qu'il existe
-      const uvAttribute = sphereGeometry.getAttribute("uv");
-      const faceCount = indices.length / 3;
-      const topGroupIndices: number[] = []; // Typage explicite
-      const bottomGroupIndices: number[] = []; // Typage explicite
-
-      for (let i = 0; i < faceCount; i++) {
-        const a = indices[i * 3];
-        const b = indices[i * 3 + 1];
-        const c = indices[i * 3 + 2];
-        const vA = uvAttribute.getY(a);
-        const vB = uvAttribute.getY(b);
-        const vC = uvAttribute.getY(c);
-        if ((vA + vB + vC) / 3 > 0.5) {
-          topGroupIndices.push(a, b, c);
-        } else {
-          bottomGroupIndices.push(a, b, c);
-        }
-      }
-      sphereGeometry.setIndex([...topGroupIndices, ...bottomGroupIndices]);
-      sphereGeometry.addGroup(0, topGroupIndices.length, 0);
-      sphereGeometry.addGroup(
-        topGroupIndices.length,
-        bottomGroupIndices.length,
-        1
-      );
-
-      // Création du Mesh de la sphère
-      const pokeballSphere = new THREE.Mesh(sphereGeometry, [
-        materialTop,
-        materialBottom,
-      ]);
-      threeContext.pokeballGroup.add(pokeballSphere);
-
-      // Bande Noire - Cercle Complet
-      const bandGeometry = new THREE.TorusGeometry(
-        sphereRadius,
-        bandThickness / 2,
-        24,
-        100
-      );
-      const bandMesh = new THREE.Mesh(bandGeometry, materialBand);
-      bandMesh.rotation.x = Math.PI / 2;
-      threeContext.pokeballGroup.add(bandMesh);
-
-      // Contour Noir du Bouton
-      const buttonRingRadius = buttonRadius + buttonRingThickness;
-      const buttonRingHeight = buttonHeight * 0.8;
-      const buttonRingGeometry = new THREE.CylinderGeometry(
-        buttonRingRadius,
-        buttonRingRadius,
-        buttonRingHeight,
-        64
-      );
-      const buttonRingMesh = new THREE.Mesh(
-        buttonRingGeometry,
-        materialButtonRing
-      );
-      buttonRingMesh.rotation.x = Math.PI / 2;
-      buttonRingMesh.position.z = sphereRadius + 0.005;
-      threeContext.pokeballGroup.add(buttonRingMesh);
-
-      // Bouton Blanc (Extérieur)
-      const buttonOuterGeometry = new THREE.CylinderGeometry(
-        buttonRadius,
-        buttonRadius,
-        buttonHeight,
-        64
-      );
-      const buttonOuterMesh = new THREE.Mesh(
-        buttonOuterGeometry,
-        materialButtonOuter
-      );
-      buttonOuterMesh.rotation.x = Math.PI / 2;
-      buttonOuterMesh.position.z = sphereRadius + 0.01;
-      threeContext.pokeballGroup.add(buttonOuterMesh);
-
-      // Bouton Gris (Intérieur)
-      const buttonInnerGeometry = new THREE.CylinderGeometry(
-        buttonRadius * 0.6,
-        buttonRadius * 0.6,
-        buttonHeight + 0.01,
-        64
-      );
-      const buttonInnerMesh = new THREE.Mesh(
-        buttonInnerGeometry,
-        materialButtonInner
-      );
-      buttonInnerMesh.position.z = 0.015;
-      buttonOuterMesh.add(buttonInnerMesh); // Ajouté comme enfant du bouton blanc
-
-      threeContext.scene.add(threeContext.pokeballGroup);
-
-      // 6. Contrôles Orbitaux
-      threeContext.controls = new OrbitControls(
-        threeContext.camera,
-        threeContext.renderer.domElement
-      );
-      threeContext.controls.enableDamping = true;
-      threeContext.controls.dampingFactor = 0.05;
-      threeContext.controls.screenSpacePanning = false;
-      threeContext.controls.minDistance = 2.5;
-      threeContext.controls.maxDistance = 8;
-      threeContext.controls.target.set(0, 0, 0);
-      threeContext.controls.update();
+    const plasticMaterialSettings = {
+      roughness: 0.4,
+      metalness: 0.0,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.1,
     };
 
-    // --- Boucle d'animation ---
+    const redMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0xcc0000,
+      ...plasticMaterialSettings
+    });
+
+    const whiteMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0xeeeeee,
+      ...plasticMaterialSettings
+    });
+
+    const blackMaterial = new THREE.MeshStandardMaterial({
+      color: 0x111111,
+      roughness: 0.7,
+      metalness: 0.2,
+    });
+
+    const topPivot = new THREE.Group();
+    topPivot.position.set(0, 0, -radius);
+    
+    const topGeom = new THREE.SphereGeometry(radius, 64, 32, 0, Math.PI * 2, 0, Math.PI / 2 - gap);
+    const topHemisphere = new THREE.Mesh(topGeom, redMaterial);
+    topHemisphere.position.set(0, 0, radius);
+    topHemisphere.castShadow = true;
+    topHemisphere.receiveShadow = true;
+    topPivot.add(topHemisphere);
+    pokeballItems.push(topHemisphere);
+    pokeballGroup.add(topPivot);
+
+    const bottomGeom = new THREE.SphereGeometry(radius, 64, 32, 0, Math.PI * 2, Math.PI / 2 + gap, Math.PI / 2);
+    const bottomHemisphere = new THREE.Mesh(bottomGeom, whiteMaterial);
+    bottomHemisphere.castShadow = true;
+    bottomHemisphere.receiveShadow = true;
+    pokeballGroup.add(bottomHemisphere);
+    pokeballItems.push(bottomHemisphere);
+
+    const coreGeom = new THREE.SphereGeometry(radius - 0.02, 64, 32);
+    const core = new THREE.Mesh(coreGeom, blackMaterial);
+    core.receiveShadow = true;
+    pokeballGroup.add(core);
+    pokeballItems.push(core);
+
+    const buttonGroup = new THREE.Group();
+    buttonGroup.position.set(0, 0, radius - 0.05);
+    buttonGroup.rotation.x = Math.PI / 2;
+
+    const ringGeom = new THREE.CylinderGeometry(0.45, 0.45, 0.15, 64);
+    const ring = new THREE.Mesh(ringGeom, blackMaterial);
+    buttonGroup.add(ring);
+    pokeballItems.push(ring);
+
+    const btnOuterGeom = new THREE.CylinderGeometry(0.3, 0.3, 0.2, 64);
+    const btnOuter = new THREE.Mesh(btnOuterGeom, whiteMaterial);
+    btnOuter.position.y = 0.02;
+    buttonGroup.add(btnOuter);
+    pokeballItems.push(btnOuter);
+
+    const btnInnerMaterial = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.2,
+      metalness: 0.1,
+      emissive: 0x444444,
+      emissiveIntensity: 0.2
+    });
+    const btnInnerGeom = new THREE.CylinderGeometry(0.18, 0.18, 0.22, 64);
+    const btnInner = new THREE.Mesh(btnInnerGeom, btnInnerMaterial);
+    btnInner.position.y = 0.03;
+    buttonGroup.add(btnInner);
+    pokeballItems.push(btnInner);
+
+    pokeballGroup.add(buttonGroup);
+
+    // --- 4. PIKACHU ---
+    const pikaGroup = new THREE.Group();
+    pikaGroup.scale.setScalar(0);
+    pikaGroup.position.y = -0.5;
+
+    const pikaYellow = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.5 });
+    const pikaBlack = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5 });
+    const pikaRed = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.5 });
+
+    const bodyGeom = new THREE.CapsuleGeometry(0.3, 0.3, 16, 16);
+    const body = new THREE.Mesh(bodyGeom, pikaYellow);
+    body.position.y = 0.45;
+    body.castShadow = true;
+    pikaGroup.add(body);
+    pokeballItems.push(body);
+
+    const headGeom = new THREE.SphereGeometry(0.35, 32, 32);
+    const head = new THREE.Mesh(headGeom, pikaYellow);
+    head.position.y = 0.9;
+    head.castShadow = true;
+    pikaGroup.add(head);
+    pokeballItems.push(head);
+
+    const earGeom = new THREE.ConeGeometry(0.08, 0.4, 16);
+    const earL = new THREE.Mesh(earGeom, pikaYellow);
+    earL.position.set(-0.2, 1.15, 0);
+    earL.rotation.z = Math.PI / 6;
+    pikaGroup.add(earL);
+    pokeballItems.push(earL);
+
+    const earR = new THREE.Mesh(earGeom, pikaYellow);
+    earR.position.set(0.2, 1.15, 0);
+    earR.rotation.z = -Math.PI / 6;
+    pikaGroup.add(earR);
+    pokeballItems.push(earR);
+
+    const earTipGeom = new THREE.ConeGeometry(0.081, 0.15, 16);
+    const earTipL = new THREE.Mesh(earTipGeom, pikaBlack);
+    earTipL.position.y = 0.13;
+    earL.add(earTipL);
+    pokeballItems.push(earTipL);
+    
+    const earTipR = new THREE.Mesh(earTipGeom, pikaBlack);
+    earTipR.position.y = 0.13;
+    earR.add(earTipR);
+    pokeballItems.push(earTipR);
+
+    const cheekGeom = new THREE.CylinderGeometry(0.06, 0.06, 0.05, 16);
+    const cheekL = new THREE.Mesh(cheekGeom, pikaRed);
+    cheekL.rotation.x = Math.PI / 2;
+    cheekL.position.set(-0.2, 0.85, 0.31);
+    pikaGroup.add(cheekL);
+    pokeballItems.push(cheekL);
+
+    const cheekR = cheekL.clone();
+    cheekR.position.set(0.2, 0.85, 0.31);
+    pikaGroup.add(cheekR);
+    pokeballItems.push(cheekR);
+
+    const eyeGeom = new THREE.SphereGeometry(0.05, 16, 16);
+    const eyeL = new THREE.Mesh(eyeGeom, pikaBlack);
+    eyeL.position.set(-0.15, 0.95, 0.32);
+    pikaGroup.add(eyeL);
+    pokeballItems.push(eyeL);
+
+    const eyeR = eyeL.clone();
+    eyeR.position.set(0.15, 0.95, 0.32);
+    pikaGroup.add(eyeR);
+    pokeballItems.push(eyeR);
+
+    const noseGeom = new THREE.SphereGeometry(0.02, 16, 16);
+    const nose = new THREE.Mesh(noseGeom, pikaBlack);
+    nose.position.set(0, 0.9, 0.35);
+    pikaGroup.add(nose);
+    pokeballItems.push(nose);
+
+    pokeballGroup.add(pikaGroup);
+    scene.add(pokeballGroup);
+
+    // --- 5. OMBRE ---
+    const planeGeom = new THREE.PlaneGeometry(10, 10);
+    const shadowMaterial = new THREE.ShadowMaterial({ opacity: 0.4 });
+    const groundPlane = new THREE.Mesh(planeGeom, shadowMaterial);
+    groundPlane.rotation.x = -Math.PI / 2;
+    groundPlane.position.y = -1.8;
+    groundPlane.receiveShadow = true;
+    scene.add(groundPlane);
+    pokeballItems.push(groundPlane);
+
+    // --- 6. CONTRÔLES ---
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.enablePan = false;
+    controls.minDistance = 2.5;
+    controls.maxDistance = 8;
+    controls.maxPolarAngle = Math.PI / 2 + 0.1;
+
+    // --- 7. INTERACTIONS ---
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    let currentRotationY = 0;
+
+    const onPointerMove = (event: PointerEvent) => {
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(pokeballGroup.children, true);
+      
+      if (intersects.length > 0) {
+        container.style.cursor = "pointer";
+      } else {
+        container.style.cursor = "grab";
+      }
+    };
+
+    const onClick = (event: MouseEvent) => {
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(pokeballGroup.children, true);
+      if (intersects.length > 0) {
+        setIsPlayingVideo(true);
+      }
+    };
+
+    container.addEventListener("pointermove", onPointerMove);
+    container.addEventListener("click", onClick);
+
+    // --- 8. ANIMATION ---
+    let animationFrameId: number;
+    const clock = new THREE.Clock();
+
     const animate = () => {
-      // Demander la prochaine frame
-      threeContext.requestRef.current = requestAnimationFrame(animate);
+      animationFrameId = requestAnimationFrame(animate);
+      const elapsedTime = clock.getElapsedTime();
 
-      // Faire tourner doucement la pokeball
-      if (threeContext.pokeballGroup) {
-        threeContext.pokeballGroup.rotation.y += 0.005;
-      }
+      currentRotationY += 0.01;
+      pokeballGroup.rotation.y = currentRotationY;
+      pokeballGroup.position.y = Math.sin(elapsedTime * 2) * 0.1;
 
-      // Mettre à jour les contrôles si le damping est activé
-      if (threeContext.controls?.enableDamping) {
-        threeContext.controls.update();
-      }
-
-      // Rendre la scène si tout est initialisé
-      if (threeContext.renderer && threeContext.scene && threeContext.camera) {
-        threeContext.renderer.render(threeContext.scene, threeContext.camera);
-      }
+      controls.update();
+      renderer.render(scene, camera);
     };
 
-    // --- Gestion du redimensionnement ---
+    animate();
+
     const handleResize = () => {
-      if (
-        !threeContext.mountRef.current ||
-        !threeContext.renderer ||
-        !threeContext.camera
-      )
-        return;
-
-      const currentMount = threeContext.mountRef.current;
-      const width = currentMount.clientWidth;
-      const height = currentMount.clientHeight;
-
-      // Mettre à jour la taille du renderer
-      threeContext.renderer.setSize(width, height);
-      // Mettre à jour l'aspect de la caméra
-      threeContext.camera.aspect = width / height;
-      threeContext.camera.updateProjectionMatrix();
+      if (!container) return;
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      renderer.setSize(width, height);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
     };
 
-    // --- Initialisation et démarrage ---
-    initThree(); // Initialiser la scène
-    animate(); // Démarrer la boucle d'animation
-    window.addEventListener("resize", handleResize); // Ajouter l'écouteur de redimensionnement
+    window.addEventListener("resize", handleResize);
 
-    // --- Fonction de nettoyage ---
-    // Exécutée lorsque le composant est démonté
     return () => {
-      // Arrêter la boucle d'animation
-      if (threeContext.requestRef.current) {
-        cancelAnimationFrame(threeContext.requestRef.current);
-      }
-
-      // Supprimer l'écouteur d'événement
+      cancelAnimationFrame(animationFrameId);
       window.removeEventListener("resize", handleResize);
-
-      // Supprimer le canvas du DOM
-      if (threeContext.renderer) {
-        threeContext.mountRef.current?.removeChild(
-          threeContext.renderer.domElement
-        );
+      container.removeEventListener("pointermove", onPointerMove);
+      container.removeEventListener("click", onClick);
+      container.style.cursor = "auto";
+      
+      if (container && renderer.domElement.parentNode === container) {
+        container.removeChild(renderer.domElement);
       }
 
-      // Disposer les objets Three.js pour libérer la mémoire
-      threeContext.scene?.traverse((object) => {
-        if (object instanceof THREE.Mesh) {
-          object.geometry?.dispose();
-          // Si le matériau est un tableau (multi-matériaux)
-          if (Array.isArray(object.material)) {
-            object.material.forEach((material) => material?.dispose());
-          } else if (object.material) {
-            // Vérifier si le matériau existe
-            object.material.dispose();
-          }
+      pokeballItems.forEach((mesh) => {
+        mesh.geometry.dispose();
+        if (Array.isArray(mesh.material)) {
+          mesh.material.forEach((mat) => mat.dispose());
+        } else {
+          mesh.material.dispose();
         }
       });
-      threeContext.renderer?.dispose(); // Très important
-      // Nettoyer les références
-      threeContext.scene = null;
-      threeContext.camera = null;
-      threeContext.renderer = null;
-      threeContext.controls = null;
-      threeContext.pokeballGroup = null;
+      renderer.dispose();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Le tableau vide assure que l'effet ne s'exécute qu'une fois au montage/démontage
+  }, [isPlayingVideo]);
 
-  // Rendu du composant: un div qui servira de point de montage pour le canvas Three.js
+  const handleVideoEnd = () => {
+    setIsPlayingVideo(false);
+  };
+
+  useEffect(() => {
+    if (isPlayingVideo && videoRef.current) {
+      videoRef.current.play();
+    }
+  }, [isPlayingVideo]);
+
   return (
-    <div
-      ref={mountRef}
-      className={className}
-      style={{ overflow: "hidden", borderRadius: "8px" }} // Empêche les barres de défilement sur ce div
-    />
+    <>
+      <div className={`relative ${className}`}>
+        <div ref={mountRef} className="w-full h-full" />
+      </div>
+
+      {isPlayingVideo && (
+        <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center">
+          <video
+            ref={videoRef}
+            src="/pokeballpikachu.mp4"
+            className="w-full h-full object-contain"
+            onEnded={handleVideoEnd}
+            autoPlay
+            playsInline
+          />
+          <button 
+            onClick={() => setIsPlayingVideo(false)}
+            className="absolute top-6 right-6 bg-white/20 hover:bg-white/40 text-white px-6 py-2 rounded-full text-sm font-semibold backdrop-blur-md transition-all shadow-lg border border-white/30"
+          >
+            Fermer
+          </button>
+        </div>
+      )}
+    </>
   );
 };
 

@@ -122,7 +122,7 @@ export const usePokemonSearch = () => {
         try {
             const response = await fetch(`https://api.tcgdex.net/v2/fr/cards?limit=${DEFAULT_CARDS_COUNT}`);
             const data = await response.json();
-            const cardIds = Array.isArray(data) ? data.map((c: any) => c.id) : FALLBACK_CARD_IDS;
+            const cardIds = Array.isArray(data) ? data.map((c: { id: string }) => c.id) : FALLBACK_CARD_IDS;
             
             // Fetch en parallèle avec limite implicite par le navigateur
             const cards = await Promise.all(cardIds.map(id => fetchCardDetails(id)));
@@ -154,7 +154,7 @@ export const usePokemonSearch = () => {
             );
 
             const searchResults = (await Promise.all(searchPromises)).flat();
-            const uniqueIds = Array.from(new Set(searchResults.map((c: any) => c.id))).slice(0, 50); // Limite à 50 pour la perf
+            const uniqueIds = Array.from(new Set(searchResults.map((c: { id: string }) => c.id))).slice(0, 50); // Limite à 50 pour la perf
 
             const detailedCards = await Promise.all(uniqueIds.map(id => fetchCardDetails(id)));
             const validCards = detailedCards.filter(Boolean) as PokemonCard[];

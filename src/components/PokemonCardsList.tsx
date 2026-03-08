@@ -1,5 +1,5 @@
 import React, { useRef, useMemo } from "react";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { Button } from "@/components/ui/button";
 import PokemonCardItem from "./PokemonCardItem";
 import { PokemonCard } from "@/types/pokemon";
@@ -48,11 +48,11 @@ const PokemonCardsList: React.FC<PokemonCardsListProps> = ({
     return r;
   }, [displayedCards, columns]);
 
-  const rowVirtualizer = useVirtualizer({
+  const rowVirtualizer = useWindowVirtualizer({
     count: rows.length,
-    getScrollElement: () => (window as any), // Utiliser le scroll de la fenêtre
     estimateSize: () => 450, // Hauteur estimée d'une ligne de cartes
     overscan: 2,
+    scrollMargin: parentRef.current?.offsetTop ?? 0,
   });
 
   if (cards.length === 0) {
@@ -74,7 +74,7 @@ const PokemonCardsList: React.FC<PokemonCardsListProps> = ({
             className="absolute top-0 left-0 w-full grid gap-4 sm:gap-6"
             style={{
               height: `${virtualRow.size}px`,
-              transform: `translateY(${virtualRow.start}px)`,
+              transform: `translateY(${virtualRow.start - rowVirtualizer.options.scrollMargin}px)`,
               gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
             }}
           >
