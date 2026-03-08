@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { formatImageUrl } from "../lib/imageUtils";
 import { PokemonCard } from "@/types/pokemon";
+import PokemonExtraInfo from "./PokemonExtraInfo";
 
 interface CardDetailModalProps {
   selectedCard: PokemonCard | null;
@@ -175,6 +176,11 @@ const CardDetailModal: React.FC<CardDetailModalProps> = ({
                 ))}
               </div>
             )}
+
+            <PokemonExtraInfo 
+              dexId={selectedCard.dexId} 
+              name={selectedCard.name} 
+            />
           </div>
         </div>
       </DialogContent>

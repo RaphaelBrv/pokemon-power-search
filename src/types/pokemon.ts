@@ -7,6 +7,7 @@ export interface PokemonCard {
     types?: string[];
     hp?: string;
     rarity?: string;
+    dexId?: number[]; // Ajouté pour PokeAPI
     set?: {
         id: string;
         name: string;
